@@ -82,11 +82,4 @@ export class CreateMemberDto {
     @IsString()
     current_village?: string;
 
-    @ApiProperty({
-        required: false
-    })
-    @IsOptional()
-    @IsString()
-    profile_picture?: string;
-
 }
