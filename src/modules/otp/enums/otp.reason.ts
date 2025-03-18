@@ -1,0 +1,4 @@
+export enum EReason {
+  RESET_PASSWORD = 'RESET_PASSWORD',
+  DELETE_ACCOUNT = 'DELETE_ACCOUNT'
+}

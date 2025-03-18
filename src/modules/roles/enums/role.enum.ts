@@ -1,0 +1,5 @@
+export enum ERoleType {
+    SUPER_ADMIN='SUPER_ADMIN',
+    DISTRICT_ADMIN='DISTRICT_ADMIN',
+    NONE='NONE'
+}
