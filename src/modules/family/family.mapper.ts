@@ -19,7 +19,7 @@ export class FamilyMapper {
         const entity = new FamilyEntity();
         Object.keys(dto).forEach((key) => {
             if(keys.has(key)){
-                entity[key] = dto[key];
+                (entity as any)[key] = dto[key];
             }
         })
         return entity;

@@ -3,8 +3,9 @@ import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { EMemberRole } from "../enum/member-role.enum";
 import { EMemberStatus } from "../enum/member-status.enum";
 import { FamilyEntity } from "./family.entity";
-
+import { Unique } from 'typeorm';
 @Entity({ name: "members", schema: "families" })
+@Unique(['name', 'national_id', 'birth_date', 'familyId', 'profile_picture', 'remembrance_day'])
 export class MembersEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None" })
