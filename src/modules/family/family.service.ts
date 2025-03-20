@@ -11,9 +11,11 @@ import { FamilyMapper } from './family.mapper';
 import { PaginationRequest } from 'src/helpers/pagination';
 import { FamilyResponseDto } from './dto/family-response.dto';
 import { Logger } from '@nestjs/common';
+import { MemorialsRepository } from './models/memorials.repository';
 import { In } from 'typeorm';
 import { NotFoundCustomException } from 'src/common/http';
 import { FamilyProp } from './dto/family-prop.dto';
+import { CreateMemorialDto } from './dto/create-memorial.dto';
 import { EFamilyStatus } from './enum/family-status.enum';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { FamilyEntity } from './models/family.entity';
@@ -24,6 +26,7 @@ export class FamilyService {
         private readonly familyRepository: FamilyRepository,
         private readonly membersRepository: MembersRepository,
         private readonly responseService: ResponseService,
+        private readonly memorialsRepository: MemorialsRepository,
         private readonly testimonialsRepository: TestimonialsRepository
     ){}
 
@@ -179,6 +182,21 @@ export class FamilyService {
             ])
             return this.responseService.makeResponse({
                 message: `Successfully created the family`,
+                payload: null
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async createMemorial(
+        dto: CreateMemorialDto
+    ): Promise<ResponseDto<string>> {
+        try{
+            const memorial = FamilyMapper.toCreateMemorialEntity(dto);
+            await this.memorialsRepository.save(memorial);
+            return this.responseService.makeResponse({
+                message: `Memorial created`,
                 payload: null
             })
         }catch(error){

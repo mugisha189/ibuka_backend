@@ -26,6 +26,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
 import { FamilyResponseDto } from './dto/family-response.dto';
 import { FamilyProp } from './dto/family-prop.dto';
+import { CreateMemorialDto } from './dto/create-memorial.dto';
 
 @Controller({
     path: 'family',
@@ -206,6 +207,19 @@ export class FamilyController {
         id: string
       ): Promise<ResponseDto<string>> {
         return this.familyService.deleteFamily(id);
+      }
+
+
+      @ApiOperation({ description: 'Create Memorial' })
+      @ApiOkCustomResponse(ResponseDto<string>)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Post('/memorial/add')
+      async addMemorial(
+        @Body(ValidationPipe) dto: CreateMemorialDto
+      ): Promise<ResponseDto<string>> {
+        return this.familyService.createMemorial(dto);
       }
 
       @ApiExtraModels(CreateTestimonialRequestDto)

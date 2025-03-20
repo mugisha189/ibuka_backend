@@ -8,6 +8,8 @@ import { TestimonialsDto } from "./dto/testimonials.dto";
 import { EMemberStatus } from "./enum";
 import { MembersDto } from "./dto/members.dto";
 import { FamilyProp } from "./dto/family-prop.dto";
+import { MemorialsEntity } from "./models/memorials.entity";
+import { CreateMemorialDto } from "./dto/create-memorial.dto";
 
 export class FamilyMapper {
 
@@ -69,6 +71,12 @@ export class FamilyMapper {
             former_cell: dto.family_general[0]?.former_cell ?? "None",
             former_village: dto.family_general[0]?.former_village ?? "None"
         });
+    }
+
+    public static toCreateMemorialEntity(
+        dto: CreateMemorialDto
+    ): MemorialsEntity {
+        return Object.assign(new MemorialsEntity(), dto);
     }
     
 
