@@ -2,7 +2,7 @@ import { CommonEntity } from "src/common/entities";
 import { Column, Entity, OneToMany } from 'typeorm';
 import { MembersEntity } from "./members.entity";
 import { TestimonialsEntity } from "./testimonials.entity";
-
+import { EFamilyStatus } from "../enum/family-status.enum";
 @Entity({ name: "family", schema: "families" })
 export class FamilyEntity extends CommonEntity {
 
@@ -11,6 +11,9 @@ export class FamilyEntity extends CommonEntity {
 
     @Column({ nullable: true, default: "None" })
     former_sector: string;
+
+    @Column({ nullable: false, type: 'enum', enum: EFamilyStatus, default: EFamilyStatus.NONE })
+    status: EFamilyStatus;
 
     @Column({ nullable: true, default: "None" })
     former_cell: string;

@@ -2,24 +2,176 @@ import { Injectable } from '@nestjs/common';
 import { FamilyRepository } from './models/family.repository';
 import { MembersRepository } from './models/members.repository';
 import { CreateFamilyDto } from './dto/create-family.dto';
+import { CreateTestimonialsDto } from './dto/create-testimonials.dto';
 import { ResponseDto } from 'src/common/dtos';
+import { TestimonialsRepository } from './models/testimonials.repository';
 import { CustomException } from 'src/common/http/exceptions/custom.exception';
 import { ResponseService } from 'src/shared/response/response.service';
 import { FamilyMapper } from './family.mapper';
+import { PaginationRequest } from 'src/helpers/pagination';
+import { FamilyResponseDto } from './dto/family-response.dto';
+import { Logger } from '@nestjs/common';
+import { In } from 'typeorm';
+import { NotFoundCustomException } from 'src/common/http';
+import { FamilyProp } from './dto/family-prop.dto';
+import { EFamilyStatus } from './enum/family-status.enum';
+import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
+import { FamilyEntity } from './models/family.entity';
 @Injectable()
 export class FamilyService {
 
     constructor(
         private readonly familyRepository: FamilyRepository,
         private readonly membersRepository: MembersRepository,
-        private readonly responseService: ResponseService
+        private readonly responseService: ResponseService,
+        private readonly testimonialsRepository: TestimonialsRepository
     ){}
+
+    private readonly logger = new Logger(FamilyService.name);
+
+    private getPaginatedResponseFamilies<T>(items: any[], pagination: PaginationRequest): PaginationResponseDto<T> {
+          const itemCount = items.length;
+          const totalPages = Math.ceil(itemCount / pagination.limit);
+          const startIndex = (pagination.page - 1) * pagination.limit;
+          const endIndex = startIndex + pagination.limit;
+          const paginatedItems = items.slice(startIndex, endIndex);
+          return {
+            items: paginatedItems,
+            itemCount: paginatedItems.length,
+            totalItems: itemCount,
+            itemsPerPage: pagination.limit,
+            totalPages,
+            currentPage: pagination.page,
+          };
+        }
+
+        private validateEnumType<T>(
+              value: string,
+              enumType: T,
+              fieldName: string,
+              logger: Logger
+            ): string | null {
+              if(Object.values(enumType).includes(value as T)){
+                return value;
+              }else{
+                logger.debug(`Invalid value for ${fieldName} ${value}`);
+                return null;
+              }
+            }
+
+            private isMatch(fieldName: string, filterValue: string): boolean {
+                return fieldName === filterValue;
+              }
+
+            private isAlmostMatch(fieldName: string, filterValue: string): boolean {
+                const similarityThreshold = 0.88;
+                const str1 = fieldName.toLowerCase();
+                const str2 = filterValue.toLowerCase();
+            
+                const calculateLevenshteinDistance = (a: string, b: string): number => {
+                    const matrix = Array.from({ length: a.length + 1 }, (_, i) =>
+                        Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+                    );
+                    for (let i = 1; i <= a.length; i++) {
+                        for (let j = 1; j <= b.length; j++) {
+                            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j - 1] + cost
+                            );
+                        }
+                    }
+                    return matrix[a.length][b.length];
+                };
+                const levenshteinDistance = calculateLevenshteinDistance(str1, str2);
+                const maxLength = Math.max(str1.length, str2.length);
+                const similarity = 1 - levenshteinDistance / maxLength;
+                return similarity >= similarityThreshold;
+            }
+        
+            private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
+                const {
+                  search, disseised_families,
+                  survived_families, testimonial_families
+                } = filters;
+                const isAnyActive = !search &&
+                !disseised_families && !survived_families &&
+                !testimonial_families
+                if(isAnyActive){
+                  return families;
+                }
+                return families.filter((family) => {
+                  return (
+                    (
+                        search &&
+                        (search !== '' || search !== null || search !== undefined) &&
+                        [
+                            family.former_district,
+                            family.former_sector,
+                            family.former_cell,
+                            family.former_village
+                        ].some(field => this.isMatch(field, search) || this.isAlmostMatch(field, search))
+                    ) ||
+                    (disseised_families && (disseised_families !== '' || disseised_families !== undefined) && (this.isMatch(family.status, disseised_families))) ||
+                    (survived_families && (survived_families !== '' || survived_families !== undefined) && (this.isMatch(family.status, survived_families))) ||
+                    (testimonial_families && (testimonial_families !== '' || testimonial_families !== undefined) && (family.testimonials?.length > 0))
+                  )
+                })
+              }
+
+    async getFamilies(
+        pagination: PaginationRequest
+    ): Promise<ResponseDto<PaginationResponseDto<FamilyResponseDto>>> {
+        try {
+            const {
+                search = pagination.params?.search ?? '',
+                disseised_families = (pagination.params?.disseised_families && this.validateEnumType(pagination.params.disseised_families, EFamilyStatus, 'disseised families', this.logger)) ?? '',
+                survived_families = (pagination.params?.survived_families && this.validateEnumType(pagination.params.survived_families, EFamilyStatus, 'survived families', this.logger)) ?? '',
+                testimonial_families = pagination.params?.testimonial_families ?? ''
+            } = pagination.params || {};
+
+            const families = await this.familyRepository.find({
+                relations: ['members', 'testimonials']
+            });
+            const filteredFamilies = this.filterFamilies(families,  { search, disseised_families, survived_families, testimonial_families })
+            const familyDtos = FamilyMapper.toFamilyDtoList(filteredFamilies);
+            const paginatedResponse = this.getPaginatedResponseFamilies(familyDtos, pagination);
+            return this.responseService.makeResponse({
+                message: `Families retrieved`,
+                payload: paginatedResponse
+            })
+        } catch (error) {
+            throw new CustomException(error);
+        }
+    }
+
+    async getFamily(
+        familyId: string
+    ) : Promise<ResponseDto<FamilyProp>> {
+        try{
+            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members']});
+            if(!family){
+                throw new NotFoundCustomException(`Family ${familyId} not found`);
+            }
+            const familyProp = FamilyMapper.toFamilyDtoPropertie(family);
+            return this.responseService.makeResponse({
+                message: `Family retrieved successfully`,
+                payload: familyProp
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+    
 
     async createFamily(
         dto: CreateFamilyDto
     ): Promise<ResponseDto<string>> {
         try{
+            console.log("the incming dto is: " + JSON.stringify(dto));
             const familyEntity = FamilyMapper.toCreateEntity(dto);
+            console.log("the incoming famileEntity is: " + JSON.stringify(familyEntity));
             const savedFamily = await this.familyRepository.save(familyEntity);
             const members = FamilyMapper.mapMembers(dto, savedFamily.id);
             await Promise.all([
@@ -30,6 +182,40 @@ export class FamilyService {
                 payload: null
             })
         }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async deleteFamily(
+        id: string
+    ): Promise<ResponseDto<string>> {
+        try{
+            const family = await this.familyRepository.findOne({ where: { id: id, status: In([EFamilyStatus.ACTIVE, EFamilyStatus.DISSEISED]) }})
+            if(!family){
+                throw new NotFoundCustomException(`Family ${id} not found or might have been deleted`);
+            }
+            await this.familyRepository.update(id, { status: EFamilyStatus.DELETED });
+            return this.responseService.makeResponse({
+                message: `Family has been deleted`,
+                payload: null
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async createTestimonial(
+        dto: CreateTestimonialsDto
+    ): Promise<ResponseDto<string>> {
+        try{
+            const testimonial = FamilyMapper.toCreateTestimonialsEntity(dto);
+            await this.testimonialsRepository.save(testimonial);
+            return this.responseService.makeResponse({
+                message: `Your testimonial has been added`,
+                payload: null
+            })
+        }catch(error){
+            console.log("the error stack is: " + error.stack);
             throw new CustomException(error);
         }
     }

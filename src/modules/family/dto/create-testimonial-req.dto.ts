@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional, IsBoolean } from 'class-validator';
-import { Transform } from 'class-transformer';
-export class CreateTestimonialsDto {
+
+export class CreateTestimonialRequestDto {
 
     @ApiProperty({ required: true })
     @IsNotEmpty()
@@ -35,10 +35,11 @@ export class CreateTestimonialsDto {
 
     @ApiProperty({
         required: false,
+        type: 'string',
+        format: 'binary',
+        isArray: true,
     })
     @IsOptional()
-    @Transform(({ value }) => Array.isArray(value) ? value : [value])
-    @IsString({ each: true })
-    testimonial_files?: string[];
+    testimonial_files?: Express.Multer.File[];
 
 }

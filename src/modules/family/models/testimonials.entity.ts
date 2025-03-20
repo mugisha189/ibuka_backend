@@ -23,7 +23,7 @@ export class TestimonialsEntity extends CommonEntity {
     familyId: string;
 
     @Column({ nullable: true, type: "jsonb", default: [] })
-    file_links: string[];
+    testimonial_files: string[];
 
     @ManyToOne(() => FamilyEntity, (family) => family.testimonials)
     @JoinColumn({ name: "familyId" })

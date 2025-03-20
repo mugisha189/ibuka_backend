@@ -17,6 +17,9 @@ export class MembersEntity extends CommonEntity {
     @Column({ nullable: false, default: "None" })
     birth_date: string;
 
+    @Column({ nullable: false, default: "Present" })
+    death_date: string;
+
     @Column({ nullable: false, type: 'enum', enum: EMemberRole, default: EMemberRole.NONE })
     role: EMemberRole;
 
