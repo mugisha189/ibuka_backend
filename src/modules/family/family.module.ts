@@ -9,10 +9,11 @@ import { MembersEntity } from './models/members.entity';
 import { TestimonialsEntity } from './models/testimonials.entity';
 import { TestimonialsRepository } from './models/testimonials.repository';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { MemorialsRepository } from './models/memorials.repository';
 @Module({
     imports: [TypeOrmModule.forFeature([FamilyEntity, MembersEntity, TestimonialsEntity])],
     controllers: [FamilyController],
-    providers: [FamilyService, MembersRepository, FamilyRepository, TestimonialsRepository, CloudinaryService],
+    providers: [FamilyService, MembersRepository, FamilyRepository, TestimonialsRepository, CloudinaryService, MemorialsRepository],
     exports: [FamilyService]
 })
 export class FamilyModule {}
