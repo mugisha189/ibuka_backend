@@ -20,6 +20,7 @@ import { CreateMemorialDto } from './dto/create-memorial.dto';
 import { EFamilyStatus } from './enum/family-status.enum';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { FamilyEntity } from './models/family.entity';
+import { MemorialShortDto } from './dto/memorial-short.dto';
 import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 @Injectable()
@@ -164,6 +165,19 @@ export class FamilyService {
             return this.responseService.makeResponse({
                 message: `Family retrieved successfully`,
                 payload: familyProp
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async getMemorialsShort(): Promise<ResponseDto<MemorialShortDto[]>> {
+        try{
+            const memorials = await this.memorialsRepository.find();
+            const memorialDtos = FamilyMapper.toMemorialsShortList(memorials);
+            return this.responseService.makeResponse({
+                message: `Memorials retrieved`,
+                payload: memorialDtos
             })
         }catch(error){
             throw new CustomException(error);

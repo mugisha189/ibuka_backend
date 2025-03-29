@@ -30,6 +30,8 @@ import { MemorialsResponseDto } from './dto/memorials-response.dto';
 import { MemorialResponseDto } from './dto/memorial-response.dto';
 import { CreateMemorialDto } from './dto/create-memorial.dto';
 import { IbukaMemberDto } from './dto/ibuka-member.dto';
+import { MemorialShortDto } from './dto/memorial-short.dto';
+import { MemorialShortResponseDto } from './dto/memorial-short-response.dto';
 import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 
@@ -123,6 +125,15 @@ export class FamilyController {
         return this.familyService.getFamily(id);
     }
 
+    @ApiOperation({ description: 'Get Memorials brief' })
+    @ApiOkCustomResponse(MemorialShortResponseDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Get('/memorials/short')
+    public getMemorialsBrief(): Promise<ResponseDto<MemorialShortDto[]>> {
+      return this.familyService.getMemorialsShort();
+    }
 
       @ApiExtraModels(CreateFamilyRequestDto, CreateMemberDto)
       @ApiOperation({ description: 'Create Family' })

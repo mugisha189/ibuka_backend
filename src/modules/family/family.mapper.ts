@@ -13,6 +13,7 @@ import { MemorialsEntity } from "./models/memorials.entity";
 import { CreateMemorialDto } from "./dto/create-memorial.dto";
 import { MemorialMemberDto } from "./dto/memorial-member.dto";
 import { IbukaMemberDto } from "./dto/ibuka-member.dto";
+import { MemorialShortDto } from "./dto/memorial-short.dto";
 
 export class FamilyMapper {
 
@@ -22,6 +23,20 @@ export class FamilyMapper {
                value !== '' &&
                !(typeof value === 'string' && (value.trim() === '' || value === 'string')) &&
                !(Array.isArray(value) && (value.length === 0 || (value.length === 1 && value[0] === 'string')));
+    }
+
+    public static toMemorialsShortList(
+        entities: MemorialsEntity[]
+    ): MemorialShortDto[] {
+        return entities.map(FamilyMapper.toMemorialShortDto);
+    }
+
+    public static toMemorialShortDto(
+        entity: MemorialsEntity
+    ): MemorialShortDto{
+        return {
+            ...Object.assign(new MemorialShortDto(), entity)
+        }
     }
 
     public static toFamilyDtoList(entities: FamilyEntity[]): FamilyDto[] {
