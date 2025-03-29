@@ -2,6 +2,7 @@ import { CommonEntity } from "src/common/entities";
 import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { FamilyEntity } from "./family.entity";
 import { MembersEntity } from "./members.entity";
+import { EMemorialType } from "../enum/memorial-type.enum";
 
 @Entity({ name: "memorial", schema: "memorials" })
 export class MemorialsEntity extends CommonEntity {
@@ -9,8 +10,8 @@ export class MemorialsEntity extends CommonEntity {
     @Column({ nullable: false, default: "None" })
     names: string;
 
-    @Column({ nullable: false, default: "None" })
-    type: string;
+    @Column({ nullable: false, type: 'enum', enum: EMemorialType, default: EMemorialType.NONE })
+    type: EMemorialType;
 
     @Column({ nullable: false, default: "None" })
     date_founded: string;

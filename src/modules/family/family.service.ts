@@ -175,9 +175,7 @@ export class FamilyService {
         dto: CreateFamilyDto
     ): Promise<ResponseDto<string>> {
         try{
-            console.log("the incming dto is: " + JSON.stringify(dto));
             const familyEntity = FamilyMapper.toCreateEntity(dto);
-            console.log("the incoming famileEntity is: " + JSON.stringify(familyEntity));
             const savedFamily = await this.familyRepository.save(familyEntity);
             const members = FamilyMapper.mapMembers(dto, savedFamily.id);
             await Promise.all([

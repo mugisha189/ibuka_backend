@@ -18,6 +18,13 @@ export class CreateMemberDto {
     national_id?: string;
 
     @ApiProperty({
+        required: true
+    })
+    @IsNotEmpty()
+    @IsString()
+    memorialId: string;
+
+    @ApiProperty({
         required: false
     })
     @IsOptional()

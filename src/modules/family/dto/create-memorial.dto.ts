@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
+import { EMemorialType } from '../enum/memorial-type.enum';
 export class CreateMemorialDto {
 
     @ApiProperty({ required: true })
@@ -7,10 +8,10 @@ export class CreateMemorialDto {
     @IsString()
     names: string;
 
-    @ApiProperty({ required: true })
+    @ApiProperty({ required: true, enum: Object.values(EMemorialType) })
     @IsNotEmpty()
-    @IsString()
-    type: string;
+    @IsEnum(EMemorialType)
+    type: EMemorialType;
 
     @ApiProperty({ required: true })
     @IsNotEmpty()
