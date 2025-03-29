@@ -12,6 +12,7 @@ import { BullModule } from '@nestjs/bull';
 import { HealthModule } from './modules/health/health.module';
 import { ConfigService } from '@nestjs/config';
 import { FamilyModule } from './modules/family/family.module';
+import { HelpingModule } from './modules/help/helping.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import config from './config';
@@ -38,6 +39,7 @@ import config from './config';
     DatabaseModule,
     SharedModule,
     HealthModule,
+    HelpingModule,
     AuthModule,
     UsersModule,
     FamilyModule,

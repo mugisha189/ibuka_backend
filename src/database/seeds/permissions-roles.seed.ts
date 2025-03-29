@@ -68,8 +68,8 @@ export default class CreateUsersSeed implements Seeder {
         user.role = userData.role;
         user.profile_picture = userData.profile_picture;
         user.roles = Promise.resolve(allRoles);
-        await connection.manager.save(user);
       }
+      await connection.manager.save(user);
     }
   }
 }

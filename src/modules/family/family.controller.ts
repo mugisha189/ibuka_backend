@@ -26,7 +26,12 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
 import { FamilyResponseDto } from './dto/family-response.dto';
 import { FamilyProp } from './dto/family-prop.dto';
+import { MemorialsResponseDto } from './dto/memorials-response.dto';
+import { MemorialResponseDto } from './dto/memorial-response.dto';
 import { CreateMemorialDto } from './dto/create-memorial.dto';
+import { IbukaMemberDto } from './dto/ibuka-member.dto';
+import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
+import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 
 @Controller({
     path: 'family',
@@ -268,9 +273,43 @@ export class FamilyController {
             throw new CustomException(error);
         }
       }
-      
 
+      @ApiOperation({ description: 'Get available memorial sites' })
+      @ApiOkPaginatedResponse(MemorialResponseDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/memorials/all')
+      public getMemorials(
+        @PaginationParams() pagination: PaginationRequest
+      ): Promise<ResponseDto<PaginationResponseDto<MemorialsResponseDto>>> {
+        return this.familyService.getMemorials(pagination);
+      }
 
+      @ApiOperation({ description: 'Get memorial members' })
+      @ApiOkPaginatedResponse(MemorialMembersResponseDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/memorial/members/:id')
+      public getMemorialMembers(
+        @Param('id') id: string,
+        @PaginationParams() pagination: PaginationRequest
+      ): Promise<ResponseDto<PaginationResponseDto<MemorialMembersResponseDto>>> {
+        return this.familyService.getMemorialMembers(id, pagination);
+      }
+
+      @ApiOperation({ description: 'Get Ibuka Members' })
+      @ApiOkPaginatedResponse(IbukaMemberDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/members/ibuka/all')
+      public getIbukaMembers(
+        @PaginationParams() pagination: PaginationRequest
+      ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
+        return this.familyService.getIbukaMembers(pagination);
+      }
       
 
 }

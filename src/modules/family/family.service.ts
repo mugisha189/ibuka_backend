@@ -15,10 +15,13 @@ import { MemorialsRepository } from './models/memorials.repository';
 import { In } from 'typeorm';
 import { NotFoundCustomException } from 'src/common/http';
 import { FamilyProp } from './dto/family-prop.dto';
+import { MemorialsResponseDto } from './dto/memorials-response.dto';
 import { CreateMemorialDto } from './dto/create-memorial.dto';
 import { EFamilyStatus } from './enum/family-status.enum';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { FamilyEntity } from './models/family.entity';
+import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
+import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 @Injectable()
 export class FamilyService {
 
@@ -234,6 +237,68 @@ export class FamilyService {
             })
         }catch(error){
             console.log("the error stack is: " + error.stack);
+            throw new CustomException(error);
+        }
+    }
+
+    async getMemorials(
+        pagination: PaginationRequest
+    ): Promise<ResponseDto<PaginationResponseDto<MemorialsResponseDto>>> {
+        try{
+            // const {
+            //     search = pagination.params?.search ?? ''
+            // } = pagination.params || {}
+            const memorials = await this.memorialsRepository.find({
+                relations: ['members']
+            })
+            const memorialDtos = FamilyMapper.toMemorialsListDto(memorials);
+            const paginatedResponse = this.getPaginatedResponseFamilies(memorialDtos, pagination);
+            return this.responseService.makeResponse({
+                message: `Memorials retrieved`,
+                payload: paginatedResponse
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async getMemorialMembers(
+        id: string,
+        pagination: PaginationRequest
+    ): Promise<ResponseDto<PaginationResponseDto<MemorialMembersResponseDto>>> {
+        try{
+            const memorial = await this.memorialsRepository.findOne({
+                where: { id },
+                relations: ['members.family']
+            })
+            if(!memorial){
+                throw new NotFoundCustomException(`This memorial was not found or its temporary deleted`);
+            }
+            const membersDtos = FamilyMapper.mapMemorialMembersList(memorial.members);
+            const paginatedResponse = this.getPaginatedResponseFamilies(membersDtos, pagination);
+            return this.responseService.makeResponse({
+                message: `Memorial members retrieved`,
+                payload: paginatedResponse
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async getIbukaMembers(
+        pagination: PaginationRequest
+    ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
+        try{
+            const members = await this.membersRepository.find({
+                relations: ['family', 'testimonials']
+            })
+            const memberDtos = FamilyMapper.toIbukaMembersDtoList(members);
+            const paginatedResponse = this.getPaginatedResponseFamilies(memberDtos, pagination);
+            return this.responseService.makeResponse({
+                message: `Ibuka Members retrieved`,
+                payload: paginatedResponse
+            })
+        }catch(error){
             throw new CustomException(error);
         }
     }

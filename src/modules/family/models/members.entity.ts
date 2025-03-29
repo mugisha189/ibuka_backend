@@ -1,8 +1,10 @@
 import { CommonEntity } from "src/common/entities";
-import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { EMemberRole } from "../enum/member-role.enum";
 import { EMemberStatus } from "../enum/member-status.enum";
 import { FamilyEntity } from "./family.entity";
+import { MemorialsEntity } from "./memorials.entity";
+import { TestimonialsEntity } from "./testimonials.entity";
 import { Unique } from 'typeorm';
 @Entity({ name: "members", schema: "families" })
 @Unique(['name', 'national_id', 'birth_date', 'familyId', 'profile_picture', 'remembrance_day'])
@@ -49,9 +51,19 @@ export class MembersEntity extends CommonEntity {
 
     @Column({ nullable: false })
     familyId: string;
+
+    @Column({ nullable: false })
+    memorialId: string;
+
+    @OneToMany(() => TestimonialsEntity, (testimonial) => testimonial.member, { eager: true, cascade: true })
+    testimonials: TestimonialsEntity[];
     
     @ManyToOne(() => FamilyEntity, (family) => family.members)
     @JoinColumn({ name: "familyId" })
     family: FamilyEntity;
+
+    @ManyToOne(() => MemorialsEntity, (memorial) => memorial.members)
+    @JoinColumn({ name: "memorialId" })
+    memorial: MemorialsEntity;
 
 }

@@ -8,8 +8,11 @@ import { TestimonialsDto } from "./dto/testimonials.dto";
 import { EMemberStatus } from "./enum";
 import { MembersDto } from "./dto/members.dto";
 import { FamilyProp } from "./dto/family-prop.dto";
+import { MemorialResponseDto } from "./dto/memorial-response.dto";
 import { MemorialsEntity } from "./models/memorials.entity";
 import { CreateMemorialDto } from "./dto/create-memorial.dto";
+import { MemorialMemberDto } from "./dto/memorial-member.dto";
+import { IbukaMemberDto } from "./dto/ibuka-member.dto";
 
 export class FamilyMapper {
 
@@ -78,6 +81,21 @@ export class FamilyMapper {
     ): MemorialsEntity {
         return Object.assign(new MemorialsEntity(), dto);
     }
+
+    public static toMemorialDto(
+        entity: MemorialsEntity
+    ): MemorialResponseDto {
+        return {
+            ...Object.assign(new MemorialResponseDto(), entity),
+            bodies: entity.members ? entity.members.length : 0
+        }
+    }
+
+    public static toMemorialsListDto(
+        entities: MemorialsEntity[]
+    ): MemorialResponseDto[] {
+        return entities.map(FamilyMapper.toMemorialDto);
+    }
     
 
     public static toCreateTestimonialsEntity(
@@ -91,6 +109,45 @@ export class FamilyMapper {
             ...memberDto,
             familyId
         })) as MembersEntity[];
+    }
+
+    public static mapMemorialMemberDto(
+        entity: MembersEntity
+    ): MemorialMemberDto {
+        return {
+            ...Object.assign(new MemorialMemberDto(), entity),
+            family_name: entity.family.family_name,
+            former_district: entity.family.former_district,
+            former_sector: entity.family.former_sector,
+            former_cell: entity.family.former_cell,
+            former_village: entity.family.former_village
+        }
+    }
+
+    public static mapMemorialMembersList(
+        entities: MembersEntity[]
+    ): MemorialMemberDto[] {
+        return entities.map(FamilyMapper.mapMemorialMemberDto);
+    }
+
+    public static toIbukaMemberDto(
+        entity: MembersEntity
+    ): IbukaMemberDto {
+        return {
+            ...Object.assign(new IbukaMemberDto(), entity),
+            family_name: entity.family.family_name,
+            former_district: entity.family.former_district,
+            former_sector: entity.family.former_sector,
+            former_cell: entity.family.former_cell,
+            former_village: entity.family.former_village,
+            testimonials: entity?.testimonials ? entity.testimonials.length : 0
+        }
+    }
+
+    public static toIbukaMembersDtoList(
+        entities: MembersEntity[]
+    ): IbukaMemberDto[] {
+        return entities.map(FamilyMapper.toIbukaMemberDto);
     }
     
 }

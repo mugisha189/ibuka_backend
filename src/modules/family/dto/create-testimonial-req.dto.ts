@@ -28,6 +28,11 @@ export class CreateTestimonialRequestDto {
     @IsString()
     familyId: string;
 
+    @ApiProperty({ required: true })
+    @IsNotEmpty()
+    @IsString()
+    memberId: string;
+
     @ApiProperty({ required: false })
     @IsOptional()
     @IsString()

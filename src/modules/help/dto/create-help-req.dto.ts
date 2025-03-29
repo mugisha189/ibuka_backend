@@ -1,18 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from 'class-transformer';
+import { IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import { CreateHelpDto } from "./create-help.dto";
+export class CreateHelpRequestDto {
 
-export class CreateHelpDto {
-    
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
-    @IsString()
-    items: string;
+        @ApiProperty({ required: true })
+        @IsNotEmpty()
+        @IsString()
+        donorId: string;
 
-    @ApiProperty({ required: true })
-    @IsNotEmpty()
-    @Transform(({ value }) => Number(value))
-    @IsNumber()
-    amount: number;
-
+        @ApiProperty({ required: true, type: [CreateHelpDto] })
+        @IsNotEmpty()
+        @ValidateNested({ each: true })
+        @Type(() => CreateHelpDto)
+        help: CreateHelpDto[];
 }
