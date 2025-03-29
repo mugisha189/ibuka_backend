@@ -188,6 +188,7 @@ export class FamilyService {
                 payload: null
             })
         }catch(error){
+            console.log("the error stack is: " + error.stack);
             throw new CustomException(error);
         }
     }

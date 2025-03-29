@@ -69,6 +69,7 @@ export class FamilyMapper {
     
     public static toCreateEntity(dto: CreateFamilyDto): FamilyEntity {
         return Object.assign(new FamilyEntity(), {
+            family_name: dto.family_general[0]?.family_name ?? "None",
             former_district: dto.family_general[0]?.former_district ?? "None",
             former_sector: dto.family_general[0]?.former_sector ?? "None",
             former_cell: dto.family_general[0]?.former_cell ?? "None",
