@@ -15,14 +15,18 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule, {
       bufferLogs: false,
-      cors: true,
     });
 
     const configService = app.get(ConfigService<ConfigKeyPaths>);
     const { apiPrefix, port } = configService.get<IAppConfig>('app');
     app.use(helmet());
     app.use(compression());
-    app.enableCors();
+    app.enableCors({
+      origin: '*', // Allow all origins
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Allow all HTTP methods
+      allowedHeaders: '*', // Allow all headers
+      credentials: true, // Enable cookies (optional)
+    });
     app.enableVersioning();
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(new ValidationPipe(validationOptions));
