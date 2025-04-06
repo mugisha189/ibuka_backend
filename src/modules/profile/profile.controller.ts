@@ -9,6 +9,7 @@ import { UserDto } from '../users/dtos/user.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { TOKEN_NAME } from 'src/constants';
 import { ResponseDto } from 'src/common/dtos';
+import { ApiTags } from '@nestjs/swagger';
 @Controller({
   path: 'profile',
   version: '1'
