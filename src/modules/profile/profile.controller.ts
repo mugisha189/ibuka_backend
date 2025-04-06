@@ -13,6 +13,7 @@ import { ResponseDto } from 'src/common/dtos';
   path: 'profile',
   version: '1'
 })
+@ApiTags('Profile')
 export class ProfileController {
   constructor(
     private readonly userService: UsersService
