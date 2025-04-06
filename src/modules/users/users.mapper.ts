@@ -13,6 +13,7 @@ export class UsersMapper {
     public static isValidValue(value: any): boolean {
         return value !== undefined && value !== null && value !== 'string;'
     }
+
     public static async toDtoPermRoles(
         entity: UserEntity,
         population: DtoPopulation = { roles: false, permissions: false }

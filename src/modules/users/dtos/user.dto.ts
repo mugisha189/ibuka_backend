@@ -13,7 +13,7 @@ export class UserDto extends BaseDto {
   email: string;
 
   @ApiProperty()
-  profilePhoto: string[];
+  profilePhoto: string;
 
   @ApiProperty({ type: [RoleDto] })
   roles?: RoleDto[];
