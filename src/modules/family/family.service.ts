@@ -23,6 +23,7 @@ import { FamilyEntity } from './models/family.entity';
 import { MemorialShortDto } from './dto/memorial-short.dto';
 import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
+import { MemorialResponseDto } from './dto/memorial-response.dto';
 @Injectable()
 export class FamilyService {
 
@@ -254,6 +255,23 @@ export class FamilyService {
         }
     }
 
+    async getMemorialById(
+        memorialId: string
+    ): Promise<ResponseDto<MemorialResponseDto>> {
+        try{
+            const memorial = await this.memorialsRepository.findOne({ where: { id: memorialId }, relations: ['members']});
+            if(!memorial){
+                throw new NotFoundCustomException(`This Memorial was not found or its temporary deleted`);
+            }
+            return this.responseService.makeResponse({
+                message: `Memorial retrieved`,
+                payload: FamilyMapper.toMemorialDto(memorial)
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
     async getMemorials(
         pagination: PaginationRequest
     ): Promise<ResponseDto<PaginationResponseDto<MemorialsResponseDto>>> {
@@ -262,7 +280,7 @@ export class FamilyService {
             //     search = pagination.params?.search ?? ''
             // } = pagination.params || {}
             const memorials = await this.memorialsRepository.find({
-                relations: ['members']
+                relations: ['members', 'families']
             })
             const memorialDtos = FamilyMapper.toMemorialsListDto(memorials);
             const paginatedResponse = this.getPaginatedResponseFamilies(memorialDtos, pagination);

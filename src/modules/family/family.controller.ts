@@ -238,6 +238,18 @@ export class FamilyController {
         return this.familyService.createMemorial(dto);
       }
 
+      @ApiOperation({ description: 'Create Memorial' })
+      @ApiOkCustomResponse(MemorialResponseDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/memorial/:id')
+      async getMemorial(
+        @Param('id') id: string
+      ): Promise<ResponseDto<MemorialResponseDto>> {
+        return this.familyService.getMemorialById(id);
+      }
+
       @ApiExtraModels(CreateTestimonialRequestDto)
       @ApiOperation({ description: 'Create Testimonial' })
       @ApiOkCustomResponse(ResponseDto<string>)
