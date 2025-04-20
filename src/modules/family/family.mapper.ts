@@ -5,7 +5,7 @@ import { TestimonialsEntity } from "./models/testimonials.entity";
 import { CreateTestimonialsDto } from "./dto/create-testimonials.dto";
 import { FamilyDto } from "./dto/family.dto";
 import { TestimonialsDto } from "./dto/testimonials.dto";
-import { EMemberStatus } from "./enum";
+import { EMemberRole, EMemberStatus } from "./enum";
 import { MembersDto } from "./dto/members.dto";
 import { FamilyProp } from "./dto/family-prop.dto";
 import { MemorialResponseDto } from "./dto/memorial-response.dto";
@@ -14,6 +14,7 @@ import { CreateMemorialDto } from "./dto/create-memorial.dto";
 import { MemorialMemberDto } from "./dto/memorial-member.dto";
 import { IbukaMemberDto } from "./dto/ibuka-member.dto";
 import { MemorialShortDto } from "./dto/memorial-short.dto";
+import { FamilyStructureDto } from "./dto/family-structure.dto";
 
 export class FamilyMapper {
 
@@ -164,6 +165,34 @@ export class FamilyMapper {
         entities: MembersEntity[]
     ): IbukaMemberDto[] {
         return entities.map(FamilyMapper.toIbukaMemberDto);
+    }
+
+    public static async toDtoFamilyStructure(
+        family: FamilyEntity
+    ): Promise<FamilyStructureDto> {
+        const dto = new FamilyStructureDto();
+
+        const members = family.members || [];
+        const parents = members.filter(m => m.role === EMemberRole.FATHER || m.role === EMemberRole.MOTHER);
+        const children = members.filter(m => m.role === EMemberRole.CHILD);
+        const deceased = members.filter(m => m.status === EMemberStatus.DISSEIZED);
+        const survived = members.filter(m => m.status === EMemberStatus.SURVIVED);
+        const father = members.find(m => m.role === EMemberRole.FATHER);
+        const mother = members.find(m => m.role === EMemberRole.MOTHER);
+        const addressSource = members[0];
+        dto.parents = parents.length;
+        dto.children = children.length;
+        dto.disseised_members = deceased.length;
+        dto.survived = survived.length;
+        dto.father = father?.name || '';
+        dto.mother = mother?.name || '';
+        dto.family_head = father?.name || '';
+        dto.family_members = members.map(m => m.name).join(', ');
+        dto.sector = addressSource?.current_sector || 'Unknown';
+        dto.cell = addressSource?.current_cell || 'Unknown';
+        dto.village = addressSource?.current_village || 'Unknown';
+
+        return dto;
     }
     
 }

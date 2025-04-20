@@ -34,6 +34,7 @@ import { MemorialShortDto } from './dto/memorial-short.dto';
 import { MemorialShortResponseDto } from './dto/memorial-short-response.dto';
 import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
+import { FamilyStructureDto } from './dto/family-structure.dto';
 
 @Controller({
     path: 'family',
@@ -248,6 +249,18 @@ export class FamilyController {
         @Param('id') id: string
       ): Promise<ResponseDto<MemorialResponseDto>> {
         return this.familyService.getMemorialById(id);
+      }
+
+      @ApiOperation({ description: 'Get Family Structure' })
+      @ApiOkCustomResponse(FamilyStructureDto)
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/family/structure/:id')
+      async getFamilyStructure(
+        @Param('id') id: string
+      ): Promise<ResponseDto<FamilyStructureDto>> {
+        return this.familyService.getFamilyStructure(id);
       }
 
       @ApiExtraModels(CreateTestimonialRequestDto)

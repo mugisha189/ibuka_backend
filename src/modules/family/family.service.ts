@@ -21,6 +21,7 @@ import { EFamilyStatus } from './enum/family-status.enum';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { FamilyEntity } from './models/family.entity';
 import { MemorialShortDto } from './dto/memorial-short.dto';
+import { FamilyStructureDto } from './dto/family-structure.dto';
 import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 import { MemorialResponseDto } from './dto/memorial-response.dto';
@@ -266,6 +267,24 @@ export class FamilyService {
             return this.responseService.makeResponse({
                 message: `Memorial retrieved`,
                 payload: FamilyMapper.toMemorialDto(memorial)
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async getFamilyStructure(
+        familyId: string
+    ): Promise<ResponseDto<FamilyStructureDto>> {
+        try{
+            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members']});
+            if(!family){
+                throw new NotFoundCustomException(`Family ${familyId} not found`);
+            }
+            const familyStructureDto = await FamilyMapper.toDtoFamilyStructure(family);
+            return this.responseService.makeResponse({
+                message: `Family Structure retrieved`,
+                payload: familyStructureDto
             })
         }catch(error){
             throw new CustomException(error);
