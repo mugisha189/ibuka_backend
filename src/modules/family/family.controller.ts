@@ -6,7 +6,7 @@ import { CreateMemberDto } from './dto/create-member.dto';
 import { FamilyService } from './family.service';
 import { ApiOkPaginatedResponse } from 'src/helpers/pagination';
 import { ApiOperation, ApiConsumes, ApiBearerAuth, ApiBody, ApiExtraModels } from '@nestjs/swagger';
-import { Post, UseInterceptors, Body, Get, Param, Delete } from '@nestjs/common';
+import { Post, UseInterceptors, Body, Get, Param, Delete, Query } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { TOKEN_NAME } from 'src/constants';
 import { ApiOkCustomResponse } from 'src/common/decorators';
@@ -340,10 +340,31 @@ export class FamilyController {
       @ApiForbiddenCustomResponse(NullDto)
       @ApiUnauthorizedCustomResponse(NullDto)
       @ApiBearerAuth(TOKEN_NAME)
+      @ApiQuery({ name: 'orphans', required: false, type: Boolean })
+      @ApiQuery({ name: 'widows', required: false, type: Boolean })
+      @ApiQuery({ name: 'widowers', required: false, type: Boolean })
+      @ApiQuery({ name: 'solitary', required: false, type: Boolean })
+      @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
+      @ApiQuery({ name: 'limit', required: true, type: Number, example: 10 })
       @Get('/members/ibuka/all')
       public getIbukaMembers(
-        @PaginationParams() pagination: PaginationRequest
+        @Query('orphans') orphans?: boolean,
+        @Query('widows') widows?: boolean,
+        @Query('widowers') widowers?: boolean,
+        @Query('solitary') solitary?: boolean,
+        @Query('page') page: number = 1,
+        @Query('limit') limit: number = 10,
       ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
+        const pagination: PaginationRequest = {
+          page,
+          limit,
+          params: {
+            orphans,
+            widows,
+            widowers,
+            solitary,
+          },
+        };
         return this.familyService.getIbukaMembers(pagination);
       }
       

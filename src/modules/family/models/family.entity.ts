@@ -1,9 +1,10 @@
 import { CommonEntity } from "src/common/entities";
-import { Column, Entity, OneToMany, ManyToMany } from 'typeorm';
+import { Column, Entity, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { MembersEntity } from "./members.entity";
 import { TestimonialsEntity } from "./testimonials.entity";
 import { EFamilyStatus } from "../enum/family-status.enum";
 import { MemorialsEntity } from "./memorials.entity";
+import { HelpingEntity } from "src/modules/help/model/helping.entity";
 @Entity({ name: "family", schema: "families" })
 export class FamilyEntity extends CommonEntity {
 
@@ -33,5 +34,21 @@ export class FamilyEntity extends CommonEntity {
 
     @ManyToMany(() => MemorialsEntity, (memorial) => memorial.families)
     memorials: MemorialsEntity[];
+
+    @ManyToMany(() => HelpingEntity, (helping) => helping.families)
+    @JoinTable({
+        schema: "families",
+        name: "helping_families",
+        joinColumn: {
+            name: "familyId",
+            referencedColumnName: "id"
+        },
+        inverseJoinColumn: {
+            name: "helpingId",
+            referencedColumnName: "id"
+        }
+    })
+    helping: HelpingEntity[];
+
 
 }

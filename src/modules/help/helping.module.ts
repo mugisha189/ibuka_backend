@@ -6,11 +6,13 @@ import { HelpingController } from './helping.controller';
 import { DonorEntity } from './model/donor.entity';
 import { HelpingEntity } from './model/helping.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { FamilyRepository } from '../family/models/family.repository';
+import { MembersRepository } from '../family/models/members.repository';
 
 @Module({
     imports: [TypeOrmModule.forFeature([DonorEntity, HelpingEntity])],
     controllers: [HelpingController],
-    providers: [DonorRepository, HelpingRepository, HelpingService],
+    providers: [DonorRepository, HelpingRepository, HelpingService, MembersRepository, FamilyRepository],
     exports: [HelpingService]
 })
 export class HelpingModule {}

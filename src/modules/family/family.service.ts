@@ -339,9 +339,40 @@ export class FamilyService {
         pagination: PaginationRequest
     ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
         try{
-            const members = await this.membersRepository.find({
-                relations: ['family', 'testimonials']
-            })
+            const {
+                orphans = pagination.params?.orphans,
+                widows = pagination.params?.widows,
+                widowers = pagination.params?.widowers,
+                solitary = pagination.params?.solitary,
+                page = 1, // Default page 1 if not provided
+                limit
+            } = pagination.params || {};
+            const skip = (page - 1) * limit;
+            const query = this.membersRepository.createQueryBuilder('member')
+            .leftJoinAndSelect('member.family', 'family')
+            .leftJoinAndSelect('member.family.members', 'family_member')
+            .where('member.familyId IS NOT NULL');
+
+            if (orphans) {
+            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND (fm.role = :father OR fm.role = :mother))', { father: 'FATHER', mother: 'MOTHER' });
+            }
+
+            if (widows) {
+            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :father)', { father: 'FATHER' });
+            }
+
+            if (widowers) {
+            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :mother)', { mother: 'MOTHER' });
+            }
+
+            if (solitary) {
+            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId)', {});
+            }
+            const members = await query
+            .skip(skip)
+            .take(limit)
+            .getMany();
+
             const memberDtos = FamilyMapper.toIbukaMembersDtoList(members);
             const paginatedResponse = this.getPaginatedResponseFamilies(memberDtos, pagination);
             return this.responseService.makeResponse({

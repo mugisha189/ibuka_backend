@@ -1,11 +1,12 @@
 import { CommonEntity } from "src/common/entities";
-import { Column, Entity, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, JoinColumn, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { EMemberRole } from "../enum/member-role.enum";
 import { EMemberStatus } from "../enum/member-status.enum";
 import { FamilyEntity } from "./family.entity";
 import { MemorialsEntity } from "./memorials.entity";
 import { TestimonialsEntity } from "./testimonials.entity";
 import { Unique } from 'typeorm';
+import { HelpingEntity } from "src/modules/help/model/helping.entity";
 @Entity({ name: "members", schema: "families" })
 @Unique(['name', 'national_id', 'birth_date', 'familyId', 'profile_picture', 'remembrance_day'])
 export class MembersEntity extends CommonEntity {
@@ -65,5 +66,20 @@ export class MembersEntity extends CommonEntity {
     @ManyToOne(() => MemorialsEntity, (memorial) => memorial.members)
     @JoinColumn({ name: "memorialId" })
     memorial: MemorialsEntity;
+
+    @ManyToMany(() => HelpingEntity, (helping) => helping.members)
+    @JoinTable({
+            schema: "families",
+            name: "helping_members",
+            joinColumn: {
+                name: "memberId",
+                referencedColumnName: "id"
+            },
+            inverseJoinColumn: {
+                name: "helpingId",
+                referencedColumnName: "id"
+            }
+        })
+    helping: HelpingEntity[];
 
 }

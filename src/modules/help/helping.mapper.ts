@@ -5,6 +5,9 @@ import { CreateHelpDto } from "./dto/create-help.dto";
 import { CreateDonorDto } from "./dto/create-donor.dto";
 import { DonorsDto } from "./dto/donors.dto";
 import { DonationsDto } from "./dto/donations.dto";
+import { HelpingDto } from "./dto/helping.dto";
+import { MembersEntity } from "../family/models/members.entity";
+import { MembersShortDto } from "./dto/members-short.dto";
 export class HelpingMapper {
 
     public static toDtoDonorsList(
@@ -49,4 +52,41 @@ export class HelpingMapper {
             return helping;
         });
     }
+    public static toDtoHelpingAll(entity: HelpingEntity): HelpingDto {
+        const dto = Object.assign(new HelpingDto(), entity);
+        dto.donorId = entity.donorId ?? null;
+        dto.donor_names = entity.donor ? entity.donor.names : null;
+        const beneficiaries: Array<any> = [];
+        if (entity.members && Array.isArray(entity.members)) {
+          beneficiaries.push(
+            ...entity.members.map(member => ({
+              memberId: member.id,
+              memberName: member.name
+            }))
+          );
+        }
+        if (entity.families && Array.isArray(entity.families)) {
+          beneficiaries.push(
+            ...entity.families.map(family => ({
+              familyId: family.id,
+              familyName: family.family_name
+            }))
+          );
+        }
+        dto.beneficiaries = beneficiaries;
+        return dto;
+      }
+
+      public static toDtoMembers(
+        entities: MembersEntity[] | MembersEntity
+      ): MembersShortDto[] {
+        if (Array.isArray(entities)) {
+          return entities.map(entity => ({
+            ...Object.assign(new MembersShortDto(), entity)
+          }));
+        } else {
+            return [Object.assign(new MembersShortDto(), entities)]
+        }
+      }
+      
 }

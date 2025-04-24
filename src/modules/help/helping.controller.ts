@@ -1,4 +1,4 @@
-import { Controller, Post, ValidationPipe, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, ValidationPipe, Body, Get, Param, Patch } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { NullDto } from 'src/common/dtos/null.dto';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -15,8 +15,13 @@ import { ApiOkPaginatedResponse } from 'src/helpers/pagination';
 import { DonationsDto } from './dto/donations.dto';
 import { PaginationRequest } from 'src/helpers/pagination';
 import { DonorsDto } from './dto/donors.dto';
+import { HelpingDto } from './dto/helping.dto';
 import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 import { DonationResponseDto } from './dto/donations-response.dto';
+import { ApiOkCustomResponse } from 'src/common/decorators';
+import { HelpingResponseDto } from './dto/helping-response.dto';
+import { UpdateHelpingDto } from './dto/update-helping.dto';
+import { MembersShortDto } from './dto/members-short.dto';
 @Controller({
     path: 'helping',
     version: '1'
@@ -64,6 +69,53 @@ export class HelpingController {
     ): Promise<ResponseDto<string>> {  
         return this.helpingService.createHelping(dto);
     } 
+
+    @ApiOperation({ description: 'Get the Helpings' })
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @ApiOkCustomResponse(HelpingDto)
+    @Get('/all')
+    public getHelpings(
+        @PaginationParams() pagination: PaginationRequest
+    ): Promise<ResponseDto<PaginationResponseDto<HelpingResponseDto>>> {
+        return this.helpingService.getHelping(pagination);
+    }
+
+    @ApiOperation({ description: 'Get the Helpings' })
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Patch('/update/:id')
+    public updateHelping(
+        @Param('id') id: string,
+        @Body(ValidationPipe) dto: UpdateHelpingDto
+    ): Promise<ResponseDto<string>> {
+        return this.helpingService.updateHelping(id, dto);
+    }
+
+    @ApiOperation({ description: 'Get members short' })
+    @ApiOkCustomResponse(MembersShortDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Get('/members/short/family')
+    public getMembersShort(): Promise<ResponseDto<MembersShortDto[]>> {
+        return this.helpingService.getMembersShort();
+    }
+
+    @ApiOperation({ description: 'Get members short' })
+    @ApiOkCustomResponse(MembersShortDto)
+    @ApiForbiddenCustomResponse(NullDto)
+    @ApiUnauthorizedCustomResponse(NullDto)
+    @ApiBearerAuth(TOKEN_NAME)
+    @Get('/members/short/family/:id')
+    public getMembersShortById(
+        @Param('id') id: string
+    ): Promise<ResponseDto<MembersShortDto[]>> {
+        return this.helpingService.getMembersShortByFamily(id);
+    }
+
 
     @ApiOperation({ description: 'Create Donor' })
     @ApiForbiddenCustomResponse(NullDto)
