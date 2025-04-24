@@ -118,7 +118,8 @@ export class HelpingService {
     ): Promise<ResponseDto<PaginationResponseDto<HelpingResponseDto>>> {
         try{
             const helpings = await this.helpingRepository.find({
-                relations: ['members', 'families', 'donor']
+                relations: ['members', 'families', 'donor'],
+                relationLoadStrategy: 'query'
             })
             if(!helpings){
                 throw new NotFoundCustomException(`No donations or helpings have been given currently`);
