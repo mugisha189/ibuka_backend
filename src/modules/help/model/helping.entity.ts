@@ -12,10 +12,10 @@ export class HelpingEntity extends CommonEntity {
     @Column({ nullable: false })
     amount: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: 0  })
     remaining_amount: number;
 
-    @Column({ nullable: false })
+    @Column({ nullable: false, default: 0  })
     given_amount: number;
 
     @Column({ nullable: false })

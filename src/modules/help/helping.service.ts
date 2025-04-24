@@ -108,6 +108,7 @@ export class HelpingService {
                 payload: null
             })
         }catch(error){
+            console.log("the error is: " + error.stack);
             throw new CustomException(error);
         }
     }
