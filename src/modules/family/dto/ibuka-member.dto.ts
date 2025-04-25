@@ -13,10 +13,34 @@ export class IbukaMemberDto extends BaseDto {
     testimonials: number;
 
     @ApiProperty()
-    death_place?: string;
+    death_province?: string;
 
     @ApiProperty()
-    survival_area?: string;
+    death_district?: string;
+
+    @ApiProperty()
+    death_sector?: string;
+
+    @ApiProperty()
+    death_cell?: string;
+
+    @ApiProperty()
+    death_village?: string;
+
+    @ApiProperty()
+    survival_province?: string;
+
+    @ApiProperty()
+    survival_district?: string;
+
+    @ApiProperty()
+    survival_sector?: string;
+
+    @ApiProperty()
+    survival_cell?: string;
+
+    @ApiProperty()
+    survival_village?: string;
 
     @ApiProperty()
     former_district: string;

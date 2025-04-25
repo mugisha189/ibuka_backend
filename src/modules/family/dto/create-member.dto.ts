@@ -66,14 +66,70 @@ export class CreateMemberDto {
     })
     @IsOptional()
     @IsString()
-    death_place?: string;
+    death_province?: string;
 
     @ApiProperty({
         required: false
     })
     @IsOptional()
     @IsString()
-    survival_area?: string;
+    death_district?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    death_sector?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    death_cell?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    death_village?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_province?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_district?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_sector?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_cell?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_village?: string;
 
     @ApiProperty({
         required: false

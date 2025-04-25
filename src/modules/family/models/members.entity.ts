@@ -36,10 +36,34 @@ export class MembersEntity extends CommonEntity {
     memorial_site: string;
 
     @Column({ nullable: true, default: "None" })
-    death_place: string;
+    death_province: string;
 
     @Column({ nullable: true, default: "None" })
-    survival_area: string;
+    death_district: string;
+
+    @Column({ nullable: true, default: "None" })
+    death_sector: string;
+
+    @Column({ nullable: true, default: "None" })
+    death_cell: string;
+
+    @Column({ nullable: true, default: "None" })
+    death_village: string;
+
+    @Column({ nullable: true, default: "None" })
+    survival_province: string;
+
+    @Column({ nullable: true, default: "None" })
+    survival_district: string;
+
+    @Column({ nullable: true, default: "None" })
+    survival_sector: string;
+
+    @Column({ nullable: true, default: "None" })
+    survival_cell: string;
+
+    @Column({ nullable: true, default: "None" })
+    survival_village: string;
 
     @Column({ nullable: true, default: "None" })
     current_district: string;
