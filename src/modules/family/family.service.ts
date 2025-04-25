@@ -22,9 +22,10 @@ import { PaginationResponseDto } from 'src/helpers/pagination/pagination-respons
 import { FamilyEntity } from './models/family.entity';
 import { MemorialShortDto } from './dto/memorial-short.dto';
 import { FamilyStructureDto } from './dto/family-structure.dto';
-import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 import { MemorialResponseDto } from './dto/memorial-response.dto';
+import { TestimonialsDto } from './dto/testimonials.dto';
+import { IbukaMemberDto } from './dto/ibuka-member.dto';
 @Injectable()
 export class FamilyService {
 
@@ -256,6 +257,52 @@ export class FamilyService {
         }
     }
 
+    async getTestimonialsByFamily(
+        familyId: string
+    ): Promise<ResponseDto<TestimonialsDto[]>> {
+        try{
+            const testimonials = await this.testimonialsRepository.find({
+                where: { familyId }
+            })
+            if(!testimonials){
+                return this.responseService.makeResponse({
+                    message: `No testimonials found for this family`,
+                    payload: []
+                })
+            }
+            const testimonialDtos = FamilyMapper.toTestimonialsDtoList(testimonials);
+            return this.responseService.makeResponse({
+                message: `Testimonials retrieved`,
+                payload: testimonialDtos
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
+    async getTestimonialsByMember(
+        id: string
+    ): Promise<ResponseDto<TestimonialsDto[]>> {
+        try{
+            const testimonials = await this.testimonialsRepository.find({
+                where: { memberId: id }
+            })
+            if(!testimonials){
+                return this.responseService.makeResponse({
+                    message: `No testimonials found for this member`,
+                    payload: []
+                })
+            }
+            const testimonialDtos = FamilyMapper.toTestimonialsDtoList(testimonials);
+            return this.responseService.makeResponse({
+                message: `Testimonials retrieved`,
+                payload: testimonialDtos
+            })
+        }catch(error){
+            throw new CustomException(error);
+        }
+    }
+
     async getMemorialById(
         memorialId: string
     ): Promise<ResponseDto<MemorialResponseDto>> {
@@ -336,21 +383,18 @@ export class FamilyService {
     }
 
     async getIbukaMembers(
-        pagination: PaginationRequest
-    ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
+        filter: { params?: any }
+    ): Promise<ResponseDto<IbukaMemberDto[]>> {
         try{
             const {
-                orphans = pagination.params?.orphans,
-                widows = pagination.params?.widows,
-                widowers = pagination.params?.widowers,
-                solitary = pagination.params?.solitary,
-                page = 1, // Default page 1 if not provided
-                limit
-            } = pagination.params || {};
-            const skip = (page - 1) * limit;
+                orphans = filter.params?.orphans,
+                widows = filter.params?.widows,
+                widowers = filter.params?.widowers,
+                solitary = filter.params?.solitary,
+            } = filter.params || {};
             const query = this.membersRepository.createQueryBuilder('member')
-            .leftJoinAndSelect('member.family', 'family')
-            .leftJoinAndSelect('member.family.members', 'family_member')
+            .leftJoinAndSelect('family', 'family')
+            .leftJoinAndSelect('family.members', 'family_member')
             .where('member.familyId IS NOT NULL');
 
             if (orphans) {
@@ -368,18 +412,16 @@ export class FamilyService {
             if (solitary) {
             query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId)', {});
             }
-            const members = await query
-            .skip(skip)
-            .take(limit)
-            .getMany();
+            const members = await query.getMany();
 
             const memberDtos = FamilyMapper.toIbukaMembersDtoList(members);
-            const paginatedResponse = this.getPaginatedResponseFamilies(memberDtos, pagination);
+            // const paginatedResponse = this.getPaginatedResponseFamilies(memberDtos, pagination);
             return this.responseService.makeResponse({
                 message: `Ibuka Members retrieved`,
-                payload: paginatedResponse
+                payload: memberDtos
             })
         }catch(error){
+            console.log(error.stack);
             throw new CustomException(error);
         }
     }

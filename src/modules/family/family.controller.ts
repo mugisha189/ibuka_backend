@@ -15,6 +15,7 @@ import { ApiForbiddenCustomResponse } from 'src/common/decorators/api-forbidden-
 import * as path from 'path';
 import { PaginationRequest, PaginationParams } from 'src/helpers/pagination';
 import { FamilyDto } from './dto/family.dto';
+import { ApiOkResponse } from '@nestjs/swagger';
 import { CreateTestimonialRequestDto } from './dto/create-testimonial-req.dto';
 import { CreateTestimonialsDto } from './dto/create-testimonials.dto';
 import { ParseJsonPipe } from 'src/helpers/json-parser';
@@ -32,9 +33,9 @@ import { CreateMemorialDto } from './dto/create-memorial.dto';
 import { IbukaMemberDto } from './dto/ibuka-member.dto';
 import { MemorialShortDto } from './dto/memorial-short.dto';
 import { MemorialShortResponseDto } from './dto/memorial-short-response.dto';
-import { IbukaMembersResponseDto } from './dto/ibuka-members-response.dto';
 import { MemorialMembersResponseDto } from './dto/memorial-member-response.dto';
 import { FamilyStructureDto } from './dto/family-structure.dto';
+import { TestimonialsDto } from './dto/testimonials.dto';
 
 @Controller({
     path: 'family',
@@ -263,6 +264,30 @@ export class FamilyController {
         return this.familyService.getFamilyStructure(id);
       }
 
+      @ApiOperation({ description: 'Get Testimonials by family' })
+      @ApiOkResponse({ type: [TestimonialsDto] })
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/testimonials/family/:id')
+      async getTestimonialsByFamily(
+        @Param('id') id: string
+      ): Promise<ResponseDto<TestimonialsDto[]>> {
+        return this.familyService.getTestimonialsByFamily(id);
+      }
+
+      @ApiOperation({ description: 'Get Testimonials by member' })
+      @ApiOkResponse({ type: [TestimonialsDto] })
+      @ApiForbiddenCustomResponse(NullDto)
+      @ApiUnauthorizedCustomResponse(NullDto)
+      @ApiBearerAuth(TOKEN_NAME)
+      @Get('/testimonials/member/:id')
+      async getTestimonialsByMember(
+        @Param('id') id: string
+      ): Promise<ResponseDto<TestimonialsDto[]>> {
+        return this.familyService.getTestimonialsByMember(id);
+      }
+
       @ApiExtraModels(CreateTestimonialRequestDto)
       @ApiOperation({ description: 'Create Testimonial' })
       @ApiOkCustomResponse(ResponseDto<string>)
@@ -336,7 +361,7 @@ export class FamilyController {
       }
 
       @ApiOperation({ description: 'Get Ibuka Members' })
-      @ApiOkPaginatedResponse(IbukaMemberDto)
+      @ApiOkResponse({ type: [IbukaMemberDto] }) // Changed from Paginated to array
       @ApiForbiddenCustomResponse(NullDto)
       @ApiUnauthorizedCustomResponse(NullDto)
       @ApiBearerAuth(TOKEN_NAME)
@@ -344,29 +369,18 @@ export class FamilyController {
       @ApiQuery({ name: 'widows', required: false, type: Boolean })
       @ApiQuery({ name: 'widowers', required: false, type: Boolean })
       @ApiQuery({ name: 'solitary', required: false, type: Boolean })
-      @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-      @ApiQuery({ name: 'limit', required: true, type: Number, example: 10 })
       @Get('/members/ibuka/all')
       public getIbukaMembers(
         @Query('orphans') orphans?: boolean,
         @Query('widows') widows?: boolean,
         @Query('widowers') widowers?: boolean,
         @Query('solitary') solitary?: boolean,
-        @Query('page') page: number = 1,
-        @Query('limit') limit: number = 10,
-      ): Promise<ResponseDto<PaginationResponseDto<IbukaMembersResponseDto>>> {
-        const pagination: PaginationRequest = {
-          page,
-          limit,
-          params: {
-            orphans,
-            widows,
-            widowers,
-            solitary,
-          },
-        };
-        return this.familyService.getIbukaMembers(pagination);
+      ): Promise<ResponseDto<IbukaMemberDto[]>> {
+        return this.familyService.getIbukaMembers({
+          params: { orphans, widows, widowers, solitary },
+        } as any); // You can create a new DTO if needed, or use partials
       }
+
       
 
 }

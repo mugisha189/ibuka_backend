@@ -13,6 +13,9 @@ export class MembersDto extends BaseDto {
     death_date: string;
 
     @ApiProperty()
+    death_place: string;
+
+    @ApiProperty()
     profile_picture: string;
 
     @ApiProperty()

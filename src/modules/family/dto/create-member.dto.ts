@@ -66,6 +66,20 @@ export class CreateMemberDto {
     })
     @IsOptional()
     @IsString()
+    death_place?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    survival_area?: string;
+
+    @ApiProperty({
+        required: false
+    })
+    @IsOptional()
+    @IsString()
     current_district?: string;
 
     @ApiProperty({

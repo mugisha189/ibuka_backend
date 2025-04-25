@@ -13,6 +13,12 @@ export class IbukaMemberDto extends BaseDto {
     testimonials: number;
 
     @ApiProperty()
+    death_place?: string;
+
+    @ApiProperty()
+    survival_area?: string;
+
+    @ApiProperty()
     former_district: string;
 
     @ApiProperty()
