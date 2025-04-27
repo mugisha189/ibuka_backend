@@ -83,7 +83,7 @@ export class MembersEntity extends CommonEntity {
     @Column({ nullable: false })
     familyId: string;
 
-    @Column({ nullable: false })
+    @Column({ nullable: true })
     memorialId: string;
 
     @OneToMany(() => TestimonialsEntity, (testimonial) => testimonial.member, { eager: true, cascade: true })
