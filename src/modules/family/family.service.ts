@@ -393,25 +393,38 @@ export class FamilyService {
                 solitary = filter.params?.solitary,
             } = filter.params || {};
             const query = this.membersRepository.createQueryBuilder('member')
-            .leftJoinAndSelect('family', 'family')
+            .leftJoinAndSelect('member.family', 'family')
             .leftJoinAndSelect('family.members', 'family_member')
             .where('member.familyId IS NOT NULL');
 
             if (orphans) {
-            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND (fm.role = :father OR fm.role = :mother))', { father: 'FATHER', mother: 'MOTHER' });
+                query.andWhere(
+                    'NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND (fm.role = :father OR fm.role = :mother))',
+                    { father: 'FATHER', mother: 'MOTHER' }
+                );
             }
 
             if (widows) {
-            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :father)', { father: 'FATHER' });
+                query.andWhere(
+                    'NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :father)',
+                    { father: 'FATHER' }
+                );
             }
 
             if (widowers) {
-            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :mother)', { mother: 'MOTHER' });
+                query.andWhere(
+                    'NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId AND fm.role = :mother)',
+                    { mother: 'MOTHER' }
+                );
             }
 
             if (solitary) {
-            query.andWhere('NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId)', {});
+                query.andWhere(
+                    'NOT EXISTS (SELECT 1 FROM family_member fm WHERE fm.familyId = member.familyId)',
+                    {}
+                );
             }
+
             const members = await query.getMany();
 
             const memberDtos = FamilyMapper.toIbukaMembersDtoList(members);

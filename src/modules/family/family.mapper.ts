@@ -161,11 +161,36 @@ export class FamilyMapper {
         }
     }
 
-    public static toIbukaMembersDtoList(
-        entities: MembersEntity[]
-    ): IbukaMemberDto[] {
-        return entities.map(FamilyMapper.toIbukaMemberDto);
+    static toIbukaMembersDtoList(members: MembersEntity[]): IbukaMemberDto[] {
+        return members.map(member => ({
+            id: member.id,
+            name: member.name,
+            family_name: member.family?.family_name,
+            testimonials: member?.testimonials?.length || 0,
+            death_province: member.death_province,
+            death_district: member.death_district,
+            death_sector: member.death_sector,
+            death_cell: member.death_cell,
+            death_village: member.death_village,
+            survival_province: member.survival_province,
+            survival_district: member.survival_district,
+            survival_sector: member.survival_sector,
+            survival_cell: member.survival_cell,
+            survival_village: member.survival_village,
+            former_district: member?.family?.former_district,
+            former_sector: member?.family?.former_sector,
+            former_cell: member?.family?.former_cell,
+            former_village: member?.family?.former_village,
+            createdAt: member.createdAt,
+            updatedAt: member.updatedAt
+        }));
     }
+
+    // public static toIbukaMembersDtoList(
+    //     entities: MembersEntity[]
+    // ): IbukaMemberDto[] {
+    //     return entities.map(FamilyMapper.toIbukaMemberDto);
+    // }
 
     public static async toDtoFamilyStructure(
         family: FamilyEntity
