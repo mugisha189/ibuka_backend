@@ -309,7 +309,7 @@ export const loginTemplate = ({
                                 <p style="line-height: 140%;">&nbsp;</p>
                                 <p style="line-height: 140%;">We have sent you this email in response to the account logged in into from ${country}.</p>
                                 <p style="line-height: 140%;">&nbsp;</p>
-                                <p style="line-height: 140%;">We noticed a new sign-in to your TaskBees Account on a new device. If this was you, you don’t need to do anything. If not, we’ll help you secure your account.</p>
+                                <p style="line-height: 140%;">We noticed a new sign-in to your Ibuka Platform Account on a new device. If this was you, you don’t need to do anything. If not, we’ll help you secure your account.</p>
                               </div>
 
                             </td>
@@ -534,7 +534,7 @@ export const loginTemplate = ({
                                         <div>
                                           <div>
                                             <div>
-                                              <p style="line-height: 140%;">Copyrights © TaskBees All Rights Reserved</p>
+                                              <p style="line-height: 140%;">Copyrights © Ibuka Platform All Rights Reserved</p>
                                             </div>
                                           </div>
                                         </div>

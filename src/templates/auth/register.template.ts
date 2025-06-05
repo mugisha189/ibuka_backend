@@ -228,7 +228,7 @@ export const registerTemplate = ({
                             <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
 
                               <div style="font-family: 'Cabin',sans-serif; font-size: 14px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word;">
-                                <p style="line-height: 140%;">Your TaskBees account was successfully created.</p>
+                                <p style="line-height: 140%;">Your Ibuka Platform account was successfully created.</p>
                                 <p style="line-height: 140%;">Connect Talent with Opportunity</p>
                               </div>
 
@@ -270,7 +270,7 @@ export const registerTemplate = ({
                               <div style="font-family: 'Cabin',sans-serif; font-size: 14px; line-height: 140%; text-align: left; word-wrap: break-word;">
                                 <p style="line-height: 140%;">Dear ${fullnames},</p>
                                 <p style="line-height: 140%;">&nbsp;</p>
-                                <p style="line-height: 140%;">Welcome to TaskBees! Let's Find Your Next Market for your Sales</p>
+                                <p style="line-height: 140%;">Welcome to Ibuka Platform! Let's Find Your Next Market for your Sales</p>
                               </div>
 
                             </td>
@@ -459,7 +459,7 @@ export const registerTemplate = ({
                             <td style="overflow-wrap:break-word;word-break:break-word;padding:13px;font-family:arial,helvetica,sans-serif;" align="left">
 
                               <div style="font-family: 'Cabin',sans-serif; font-size: 16px; color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word;">
-                                <p style="line-height: 140%;">Copyrights © TaskBees All Rights Reserved</p>
+                                <p style="line-height: 140%;">Copyrights © Ibuka Platform All Rights Reserved</p>
                               </div>
 
                             </td>

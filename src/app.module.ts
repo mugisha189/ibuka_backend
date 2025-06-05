@@ -16,6 +16,10 @@ import { HelpingModule } from './modules/help/helping.module';
 import { PermissionsModule } from './modules/permissions/permissions.module';
 import { RolesModule } from './modules/roles/roles.module';
 import config from './config';
+import { FilesModule } from './modules/files/files.module';
+import { MemberModule } from './modules/member/member.module';
+import { TestimonialModule } from './modules/testimonials/testimonial.module';
+import { MemorialsModule } from './modules/memorials/memorials.module';
 
 @Module({
   imports: [
@@ -39,14 +43,18 @@ import config from './config';
     DatabaseModule,
     SharedModule,
     HealthModule,
-    HelpingModule,
     AuthModule,
     UsersModule,
     FamilyModule,
-    CloudinaryModule,
+    MemberModule,
+    TestimonialModule,
+    MemorialsModule,
     ProfileModule,
+    HelpingModule,
+    CloudinaryModule,
     RolesModule,
     PermissionsModule,
+    FilesModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unauthorized-custom-response.decorator';
 import { ApiForbiddenCustomResponse } from 'src/common/decorators/api-forbidden-custom-response.decorator';
@@ -24,7 +24,7 @@ export class ProfileController {
   @ApiUnauthorizedCustomResponse(NullDto)
   @ApiForbiddenCustomResponse(NullDto)
   @ApiBearerAuth(TOKEN_NAME)
-  @Post('/get-profile')
+  @Get('/get-profile')
   async getProfile(): Promise<ResponseDto<UserDto>> {
     return this.userService.getProfile();
   }

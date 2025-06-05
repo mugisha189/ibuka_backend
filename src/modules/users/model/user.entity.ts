@@ -12,6 +12,8 @@ import { PermissionEntity } from "src/modules/permissions/model/permission.entit
 import { TokenEntity } from "src/modules/tokens/model/token.entity";
 import { UserStatus } from "../enums/user-status.enum";
 import { ERoleType } from "src/modules/roles/enums/role.enum";
+import { District } from '../enums/district.enum';
+import { Province } from "../enums/province.enum";
 
 @Entity({ name: "users", schema: "users" })
 export class UserEntity extends CommonEntity {
@@ -33,6 +35,12 @@ export class UserEntity extends CommonEntity {
 
     @Column({ nullable: true })
     profile_picture: string;
+
+    @Column({ nullable: true, type: 'enum', enum: District })
+    district?: District;
+
+    @Column({ nullable: true, type: 'enum', enum: Province })
+    province?: Province;
 
     @ManyToMany(() => RoleEntity, (role) => role.users, { cascade: true })
     @JoinTable({

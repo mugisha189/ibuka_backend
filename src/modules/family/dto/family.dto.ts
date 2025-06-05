@@ -25,7 +25,7 @@ export class FamilyDto extends BaseDto {
     current_cell: string;
 
     @ApiProperty()
-    disseised: number;
+    deceased: number;
 
     @ApiProperty()
     current_village: string;

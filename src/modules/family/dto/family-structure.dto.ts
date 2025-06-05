@@ -31,7 +31,7 @@ export class FamilyStructureDto extends BaseDto {
     family_members: string;
 
     @ApiProperty()
-    disseised_members: number;
+    deceased_members: number;
 
     @ApiProperty()
     survived: number;

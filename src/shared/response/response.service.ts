@@ -15,16 +15,18 @@ export class ResponseService {
   constructor(@Inject(REQUEST) private readonly request: Request) {}
 
   public makeResponse<T>(params: MakeResParams<T>): ResponseDto<T> {
-    const { route, method } = this.request;
+    const req = this.request;
+    const route = req && (req as any).route ? (req as any).route : undefined;
+    const method = req && req.method ? req.method : undefined;
     const { message, payload, responseType = EResponse.SUCCESS } = params;
     const timestamp = new Date().getTime();
 
     const response: ResponseDto<T> = {
       success: responseType == EResponse.SUCCESS ? true : false,
-      path: route ? route.path : `/${message.split(' /')[1]}`,
+      path: route && route.path ? route.path : '/',
       message,
       payload,
-      method,
+      method: method || 'N/A',
       timestamp,
     };
     return response;

@@ -104,6 +104,28 @@ export class TokensService {
     return await this.tokenRepository.save(accessTokenData);
   }
 
+  async generateActivateAccountToken(
+    user: UserEntity,
+  ): Promise<TokenEntity> {
+    console.log(user)
+    const accessTokenData = this.tokenRepository.create({
+      id: v4(),
+      userId:user.id,
+      type: TokenType.AccessToken,
+    });
+    const payload: JwtPayload = {
+      sub: user.id,
+      tid: accessTokenData.id,
+      type: TokenType.ActivateAccount,
+    };
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: this.configService.get('security.jwtActivate'),
+      expiresIn: this.configService.get('security.jwtActivateExpire'),
+    });
+    accessTokenData.token = refreshToken;
+    return await this.tokenRepository.save(accessTokenData);
+  }
+
   async verifyAccessToken(accessToken: string): Promise<JwtPayload | null> {
     try {
       const payload: JwtPayload = await this.jwtService.verifyAsync(
@@ -112,6 +134,7 @@ export class TokensService {
           secret: this.configService.get('security.jwtAccess'),
         },
       );
+
 
       const foundToken = await this.tokenRepository.findOneBy({
         id: payload.tid,

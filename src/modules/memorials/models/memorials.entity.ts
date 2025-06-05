@@ -1,8 +1,9 @@
 import { CommonEntity } from "src/common/entities";
 import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
-import { FamilyEntity } from "./family.entity";
-import { MembersEntity } from "./members.entity";
 import { EMemorialType } from "../enum/memorial-type.enum";
+import { MembersEntity } from "src/modules/family/models/members.entity";
+import { FamilyEntity } from "src/modules/family/models/family.entity";
+
 
 @Entity({ name: "memorial", schema: "memorials" })
 export class MemorialsEntity extends CommonEntity {

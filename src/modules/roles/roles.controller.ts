@@ -70,7 +70,7 @@ export class RolesController {
   @ApiOperation({ description: 'Get role by id' })
   @ApiOkCustomResponse(RoleResponseDto)
   // @Permissions('read.roles')
-  @Get('/:id')
+  @Get('/:id/id')
   public getRoleById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ResponseDto<RoleResponseDto>> {
@@ -108,7 +108,7 @@ export class RolesController {
   @ApiOperation({ description: 'Update role by id' })
   @ApiOkCustomResponse(RoleResponseDto)
   // @Permissions('update.roles')
-  @Put('/:id')
+  @Put('/:id/id')
   public updateRole(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(ValidationPipe) roleDto: UpdateRoleRequestDto,

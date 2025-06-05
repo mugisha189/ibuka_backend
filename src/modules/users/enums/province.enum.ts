@@ -1,0 +1,7 @@
+export enum Province{
+    NORTHERN="NORTHERN",
+    SOUTHERN="SOUTHERN",
+    WESTERN="WESTERN",
+    EASTERN="EASTERN",
+    KIGALI="KIGALI",
+}

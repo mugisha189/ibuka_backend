@@ -3,7 +3,7 @@ import { Column, Entity, ManyToOne, JoinColumn, OneToMany, ManyToMany, JoinTable
 import { EMemberRole } from "../enum/member-role.enum";
 import { EMemberStatus } from "../enum/member-status.enum";
 import { FamilyEntity } from "./family.entity";
-import { MemorialsEntity } from "./memorials.entity";
+import { MemorialsEntity } from "../../memorials/models/memorials.entity";
 import { TestimonialsEntity } from "./testimonials.entity";
 import { Unique } from 'typeorm';
 import { HelpingEntity } from "src/modules/help/model/helping.entity";

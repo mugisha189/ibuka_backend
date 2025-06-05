@@ -8,6 +8,7 @@ export const AppConfig = registerAs(appRegToken, () => ({
   description: process.env.APP_DESCRIPTION,
   workingDirectory: process.env.PWD,
   backendDomain: process.env.BACKEND_DOMAIN,
+  frontendDomain:process.env.FRONTEND_DOMAIN,
   port: parseInt(process.env.APP_PORT, 10) || 8084,
   apiPrefix: process.env.API_PREFIX || 'api',
   appVersion: process.env.APP_VERSION || '1.0.0',

@@ -58,7 +58,7 @@ export class PermissionsController {
   @ApiOperation({ description: 'Get permission by id' })
   @ApiOkCustomResponse(PermissionResponseDto)
   // @Permissions('read.permissions')
-  @Get('/:id')
+  @Get('/:id/id')
   public getPermissionById(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ResponseDto<PermissionResponseDto>> {
@@ -80,7 +80,7 @@ export class PermissionsController {
   @ApiOkCustomResponse(PermissionResponseDto)
   @ApiConflictResponse({ description: 'Permission already exists' })
   // @Permissions('update.permissions')
-  @Put('/:id')
+  @Put('/:id/id')
   public updatePermission(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(ValidationPipe) permissionDto: UpdatePermissionRequestDto,
