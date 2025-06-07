@@ -70,10 +70,11 @@ export class MemorialsController {
     @ApiForbiddenCustomResponse(NullDto)
     @ApiUnauthorizedCustomResponse(NullDto)
     @ApiBearerAuth(TOKEN_NAME)
-    @Get('/all')
+    @Get('/all/memorials')
     public getMemorials(
       @PaginationParams() pagination: PaginationRequest
     ): Promise<ResponseDto<PaginationResponseDto<MemorialsResponseDto>>> {
+      console.log("going to get all the memorials that are available");
       return this.memorialsService.getMemorials(pagination);
     }
   
