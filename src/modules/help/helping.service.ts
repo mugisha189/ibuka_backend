@@ -16,7 +16,7 @@ import { HelpingResponseDto } from './dto/helping-response.dto';
 import { UpdateHelpingDto } from './dto/update-helping.dto';
 import { In } from 'typeorm';
 import { FamilyRepository } from '../family/models/family.repository';
-import { MembersRepository } from '../family/models/members.repository';
+import { MembersRepository } from '../member/models/members.repository';
 import { MembersShortDto } from './dto/members-short.dto';
 @Injectable()
 export class HelpingService {

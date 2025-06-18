@@ -2,7 +2,7 @@ import { CommonEntity } from "src/common/entities";
 import { Column, Entity, OneToMany } from 'typeorm';
 import { HelpingEntity } from "./helping.entity";
 
-@Entity({ name: "donors", schema: "helpings" })
+@Entity({ name: "donors" })
 export class DonorEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None" })

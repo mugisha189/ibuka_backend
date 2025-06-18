@@ -10,7 +10,7 @@ import { CommonEntity } from 'src/common/entities';
 import { EOTPStatus } from '../enums/otp.status';
 import { UserEntity } from '../../users/model/user.entity';
 
-@Entity({ schema: 'users', name: 'otps' })
+@Entity({  name: 'otps' })
 export class OTPEntity extends CommonEntity {
   @PrimaryGeneratedColumn('uuid')
   otpId: string;

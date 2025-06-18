@@ -3,7 +3,7 @@ import { CommonEntity } from 'src/common/entities';
 import { RoleEntity } from '../../roles/model/role.entity';
 import { UserEntity } from '../../users/model/user.entity';
 
-@Entity({ schema: "users", name: 'permissions' })
+@Entity({  name: 'permissions' })
 export class PermissionEntity extends CommonEntity {
   @Column({
     name: 'slug',

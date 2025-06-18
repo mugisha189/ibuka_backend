@@ -15,7 +15,7 @@ import { ERoleType } from "src/modules/roles/enums/role.enum";
 import { District } from '../enums/district.enum';
 import { Province } from "../enums/province.enum";
 
-@Entity({ name: "users", schema: "users" })
+@Entity({ name: "users" })
 export class UserEntity extends CommonEntity {
 
     @Column({ nullable: false, unique: true })
@@ -44,7 +44,7 @@ export class UserEntity extends CommonEntity {
 
     @ManyToMany(() => RoleEntity, (role) => role.users, { cascade: true })
     @JoinTable({
-        schema: 'users',
+        
         name: 'users-roles',
         joinColumn: {
             name: 'userId',
@@ -59,7 +59,7 @@ export class UserEntity extends CommonEntity {
 
     @ManyToMany(() => PermissionEntity, (permission) => permission.users, { cascade: true })
     @JoinTable({
-        schema: 'users',
+        
         name: 'users-permissions',
         joinColumn: {
             name: 'userId',

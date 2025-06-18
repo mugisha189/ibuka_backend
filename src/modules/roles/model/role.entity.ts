@@ -4,7 +4,7 @@ import { CommonEntity } from 'src/common/entities';
 import { RoleStatus } from '../enums/role-status.enum';
 import { UserEntity } from 'src/modules/users/model/user.entity';
 import { ERoleType } from '../enums/role.enum';
-@Entity({schema: "users", name: 'roles' })
+@Entity({ name: 'roles' })
 export class RoleEntity extends CommonEntity {
 
   @Column({

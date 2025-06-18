@@ -7,8 +7,8 @@ import { Unique } from 'typeorm';
 import { HelpingEntity } from "src/modules/help/model/helping.entity";
 import { FamilyEntity } from "src/modules/family/models/family.entity";
 import { TestimonialsEntity } from "src/modules/testimonials/models/testimonials.entity";
-@Entity({ name: "members", schema: "families" })
-@Unique(['name', 'national_id', 'birth_date', 'familyId', 'profile_picture', 'remembrance_day'])
+@Entity({ name: "members"})
+@Unique([ 'national_id'])
 export class MembersEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None" })
@@ -77,8 +77,8 @@ export class MembersEntity extends CommonEntity {
     @Column({ nullable: true, default: "None" })
     current_village: string;
 
-    @Column({ nullable: true, default: "" })
-    profile_picture: string;
+    @Column({ type: 'simple-array', nullable: true })
+    pictures: string[];
 
     @Column({ nullable: false })
     familyId: string;
@@ -99,7 +99,7 @@ export class MembersEntity extends CommonEntity {
 
     @ManyToMany(() => HelpingEntity, (helping) => helping.members)
     @JoinTable({
-            schema: "families",
+            
             name: "helping_members",
             joinColumn: {
                 name: "memberId",

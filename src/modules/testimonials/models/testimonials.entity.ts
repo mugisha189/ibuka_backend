@@ -1,8 +1,8 @@
 import { CommonEntity } from "src/common/entities";
 import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { FamilyEntity } from "./family.entity";
-import { MembersEntity } from "./members.entity";
-@Entity({ name: "testimonials", schema: "families" })
+import { MembersEntity } from "../../member/models/members.entity";
+@Entity({ name: "testimonials" })
 export class TestimonialsEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None" })

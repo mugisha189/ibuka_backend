@@ -7,7 +7,7 @@ import { DonorEntity } from './model/donor.entity';
 import { HelpingEntity } from './model/helping.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FamilyRepository } from '../family/models/family.repository';
-import { MembersRepository } from '../family/models/members.repository';
+import { MembersRepository } from '../member/models/members.repository';
 
 @Module({
     imports: [TypeOrmModule.forFeature([DonorEntity, HelpingEntity])],

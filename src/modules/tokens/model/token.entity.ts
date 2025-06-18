@@ -3,7 +3,7 @@ import { CommonEntity } from 'src/common/entities';
 import { TokenType } from '../enums';
 import { UserEntity } from '../../users/model/user.entity';
 
-@Entity({ schema: "users",name: 'tokens' })
+@Entity({ name: 'tokens' })
 export class TokenEntity extends CommonEntity {
   @Column({
     length: 500,

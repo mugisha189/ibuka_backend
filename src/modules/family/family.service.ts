@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { FamilyRepository } from './models/family.repository';
-import { MembersRepository } from './models/members.repository';
+import { MembersRepository } from '../member/models/members.repository';
 import { CreateFamilyDto } from './dto/create-family.dto';
 import { ResponseDto } from 'src/common/dtos';
 import { CustomException } from 'src/common/http/exceptions/custom.exception';
@@ -90,51 +90,82 @@ export class FamilyService {
         return similarity >= similarityThreshold;
     }
 
-    private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
-        const {
-            search, deceased_families,
-            survived_families, testimonial_families
-        } = filters;
-        const isAnyActive = !search &&
-            !deceased_families && !survived_families &&
-            !testimonial_families
-        if (isAnyActive) {
-            return families;
-        }
-        return families.filter((family) => {
-            return (
-                (
-                    search &&
-                    (search !== '' || search !== null || search !== undefined) &&
-                    [
-                        family.former_district,
-                        family.former_sector,
-                        family.former_cell,
-                        family.former_village
-                    ].some(field => this.isMatch(field, search) || this.isAlmostMatch(field, search))
-                ) ||
-                (deceased_families && (deceased_families !== '' || deceased_families !== undefined) && (this.isMatch(family.status, deceased_families))) ||
-                (survived_families && (survived_families !== '' || survived_families !== undefined) && (this.isMatch(family.status, survived_families))) ||
-                (testimonial_families && (testimonial_families !== '' || testimonial_families !== undefined) && (family.testimonials?.length > 0))
-            )
-        })
-    }
+private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
+  const {
+    search,
+    deceased_families,
+    survived_families,
+    testimonial_families,
+    sector,
+    survivors,
+    testimonials,
+  } = filters;
+
+  const isAnyActive = !search &&
+    !deceased_families && !survived_families &&
+    !testimonial_families && !sector && survivors === undefined && testimonials === undefined;
+
+  if (isAnyActive) {
+    return families;
+  }
+
+  return families.filter(family => {
+    const matchesSearch = search && search !== '' &&
+      [family.former_district, family.former_sector, family.former_cell, family.former_village]
+        .some(field => this.isMatch(field, search) || this.isAlmostMatch(field, search));
+
+    const matchesDeceased = deceased_families && deceased_families !== '' && this.isMatch(family.status, deceased_families);
+    const matchesSurvived = survived_families && survived_families !== '' && this.isMatch(family.status, survived_families);
+    const hasTestimonials = testimonial_families && testimonial_families !== '' && family.testimonials?.length > 0;
+
+    const matchesSector = sector && sector !== '' &&
+      family.members.some(member => member.current_sector === sector);
+
+    const matchesSurvivorsCount = typeof survivors === 'number' &&
+      family.members.filter(member => member.status === 'SURVIVED').length === survivors;
+
+    const matchesTestimonialsCount = typeof testimonials === 'number' &&
+      (family.testimonials?.length ?? 0) === testimonials;
+
+    return (
+      matchesSearch ||
+      matchesDeceased ||
+      matchesSurvived ||
+      hasTestimonials ||
+      matchesSector ||
+      matchesSurvivorsCount ||
+      matchesTestimonialsCount
+    );
+  });
+}
 
     async getFamilies(
         pagination: PaginationRequest
     ): Promise<ResponseDto<PaginationResponseDto<FamilyResponseDto>>> {
         try {
-            const {
-                search = pagination.params?.search ?? '',
-                deceased_families = (pagination.params?.deceased_families && this.validateEnumType(pagination.params.deceased_families, EFamilyStatus, 'deceased families', this.logger)) ?? '',
-                survived_families = (pagination.params?.survived_families && this.validateEnumType(pagination.params.survived_families, EFamilyStatus, 'survived families', this.logger)) ?? '',
-                testimonial_families = pagination.params?.testimonial_families ?? ''
-            } = pagination.params || {};
+    const {
+      search = pagination.params?.search ?? '',
+      deceased_families = (pagination.params?.deceased_families && this.validateEnumType(pagination.params.deceased_families, EFamilyStatus, 'deceased families', this.logger)) ?? '',
+      survived_families = (pagination.params?.survived_families && this.validateEnumType(pagination.params.survived_families, EFamilyStatus, 'survived families', this.logger)) ?? '',
+      testimonial_families = pagination.params?.testimonial_families ?? '',
+      sector = pagination.params?.sector ?? '',
+      survivors = pagination.params?.survivors !== undefined ? Number(pagination.params.survivors) : undefined,
+      testimonials = pagination.params?.testimonials !== undefined ? Number(pagination.params.testimonials) : undefined,
+    } = pagination.params || {};
 
-            const families = await this.familyRepository.find({
-                relations: ['members', 'testimonials']
-            });
-            const filteredFamilies = this.filterFamilies(families, { search, deceased_families, survived_families, testimonial_families })
+    const families = await this.familyRepository.find({
+      relations: ['members', 'testimonials']
+    });
+
+    const filteredFamilies = this.filterFamilies(families, {
+      search,
+      deceased_families,
+      survived_families,
+      testimonial_families,
+      sector,
+      survivors,
+      testimonials,
+    });
             const familyDtos = FamilyMapper.toFamilyDtoList(filteredFamilies);
             const paginatedResponse = this.getPaginatedResponseFamilies(familyDtos, pagination);
             return this.responseService.makeResponse({

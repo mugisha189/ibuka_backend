@@ -34,21 +34,24 @@ export class FamilyController {
   ) { }
 
 
-  @ApiOperation({ description: 'Get paginated families list' })
-  @ApiOkPaginatedResponse(FamilyDto)
-  @ApiQuery({ name: 'search', type: 'string', required: false })
-  @ApiQuery({ name: 'deceased_families', type: 'string', required: false })
-  @ApiQuery({ name: 'survived_families', type: 'string', required: false })
-  @ApiQuery({ name: 'testimonial_families', type: 'string', required: false })
-  @ApiUnauthorizedCustomResponse(NullDto)
-  @ApiForbiddenCustomResponse(NullDto)
-  @ApiBearerAuth(TOKEN_NAME)
-  @Get('/families')
-  public getFamilies(
-    @PaginationParams() pagination: PaginationRequest,
-  ): Promise<ResponseDto<PaginationResponseDto<FamilyResponseDto>>> {
-    return this.familyService.getFamilies(pagination);
-  }
+@ApiOperation({ description: 'Get paginated families list' })
+@ApiOkPaginatedResponse(FamilyDto)
+@ApiQuery({ name: 'search', type: 'string', required: false })
+@ApiQuery({ name: 'deceased_families', type: 'string', required: false })
+@ApiQuery({ name: 'survived_families', type: 'string', required: false })
+@ApiQuery({ name: 'testimonial_families', type: 'string', required: false })
+@ApiQuery({ name: 'sector', type: 'string', required: false })
+@ApiQuery({ name: 'survivors', type: 'number', required: false })
+@ApiQuery({ name: 'testimonials', type: 'number', required: false })
+@ApiUnauthorizedCustomResponse(NullDto)
+@ApiForbiddenCustomResponse(NullDto)
+@ApiBearerAuth(TOKEN_NAME)
+@Get('/families')
+public getFamilies(
+  @PaginationParams() pagination: PaginationRequest,
+): Promise<ResponseDto<PaginationResponseDto<FamilyResponseDto>>> {
+  return this.familyService.getFamilies(pagination);
+}
 
   @ApiOperation({ description: 'Get family by id' })
   @ApiOkCustomResponse(FamilyProp)

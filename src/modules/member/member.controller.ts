@@ -2,7 +2,7 @@ import { ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { MemberService } from './member.service';
 import { ApiOperation,  ApiBearerAuth } from '@nestjs/swagger';
-import { Post,  Body, Get, Param, Delete, Query, Controller, Patch } from '@nestjs/common';
+import { Post,  Body, Get, Param, Delete, Query, Controller, Patch, ParseIntPipe } from '@nestjs/common';
 import { TOKEN_NAME } from 'src/constants';
 import { ApiOkCustomResponse } from 'src/common/decorators';
 import { NullDto } from 'src/common/dtos/null.dto';
@@ -15,6 +15,7 @@ import { ApiUnauthorizedCustomResponse } from 'src/common/decorators/api-unautho
 import { IbukaMemberDto } from './dto/ibuka-member.dto';
 import { MembersEntity } from './models/members.entity';
 import { UpdateMemberDto } from './dto/update-member.dto';
+import { PaginationResponseDto } from 'src/helpers/pagination/pagination-response.dto';
 
 @Controller({
   path: 'member',
@@ -118,26 +119,39 @@ export class MemberController {
     }
   }
 
-  @ApiOperation({ description: 'Get Ibuka Members' })
-  @ApiOkResponse({ type: [IbukaMemberDto] })
-  @ApiForbiddenCustomResponse(NullDto)
-  @ApiUnauthorizedCustomResponse(NullDto)
-  @ApiBearerAuth(TOKEN_NAME)
-  @ApiQuery({ name: 'orphans', required: false, type: Boolean })
-  @ApiQuery({ name: 'widows', required: false, type: Boolean })
-  @ApiQuery({ name: 'widowers', required: false, type: Boolean })
-  @ApiQuery({ name: 'solitary', required: false, type: Boolean })
-  @Get('/ibuka/all')
-  public getIbukaMembers(
-    @Query('orphans') orphans?: boolean,
-    @Query('widows') widows?: boolean,
-    @Query('widowers') widowers?: boolean,
-    @Query('solitary') solitary?: boolean,
-  ): Promise<ResponseDto<IbukaMemberDto[]>> {
-    return this.memberService.getIbukaMembers({
-      params: { orphans, widows, widowers, solitary },
-    } as any);
-  }
+@ApiOperation({ description: 'Get Ibuka Members' })
+@ApiOkResponse({ type: [IbukaMemberDto] })
+@ApiForbiddenCustomResponse(NullDto)
+@ApiUnauthorizedCustomResponse(NullDto)
+@ApiBearerAuth(TOKEN_NAME)
+@ApiQuery({ name: 'orphans', required: false, type: Boolean })
+@ApiQuery({ name: 'widows', required: false, type: Boolean })
+@ApiQuery({ name: 'widowers', required: false, type: Boolean })
+@ApiQuery({ name: 'solitary', required: false, type: Boolean })
+@ApiQuery({ name: 'search', required: false, type: String })
+@ApiQuery({ name: 'sector', required: false, type: String })
+@ApiQuery({ name: 'testimonials', required: false, type: Boolean })
+@ApiQuery({ name: 'page', required: false, type: Number })
+@ApiQuery({ name: 'limit', required: false, type: Number })
+@Get('/ibuka/all')
+public getIbukaMembers(
+  @Query('orphans') orphans?: boolean,
+  @Query('widows') widows?: boolean,
+  @Query('widowers') widowers?: boolean,
+  @Query('solitary') solitary?: boolean,
+  @Query('search') search?: string,
+  @Query('sector') sector?: string,
+  @Query('testimonials') testimonials?: boolean,
+  @Query('page', ParseIntPipe) page: number = 1,
+  @Query('limit', ParseIntPipe) limit: number = 10,
+): Promise<ResponseDto<PaginationResponseDto<IbukaMemberDto>>> {
+  return this.memberService.getIbukaMembers({
+    params: { orphans, widows, widowers, solitary, search, sector, testimonials },
+    pagination: { page, limit },
+  } as any);
+}
+
+
 
 
 

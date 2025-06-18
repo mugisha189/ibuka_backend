@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEnum, IsArray } from 'class-validator';
 import { EMemberRole, EMemberStatus } from "../enum";
 export class CreateMemberDto {
     
@@ -55,11 +55,13 @@ export class CreateMemberDto {
     memorial_site?: string;
 
     @ApiProperty({
-        required: false
-    })
-    @IsOptional()
-    @IsString()
-    profile_picture?: string;
+        required: false,
+        type: [String],
+      })
+      @IsOptional()
+      @IsArray()
+      @IsString({ each: true })
+      pictures?: string[];
 
     @ApiProperty({
         required: false

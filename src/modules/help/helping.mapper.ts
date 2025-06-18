@@ -6,7 +6,7 @@ import { CreateDonorDto } from "./dto/create-donor.dto";
 import { DonorsDto } from "./dto/donors.dto";
 import { DonationsDto } from "./dto/donations.dto";
 import { HelpingDto } from "./dto/helping.dto";
-import { MembersEntity } from "../family/models/members.entity";
+import { MembersEntity } from "../member/models/members.entity";
 import { MembersShortDto } from "./dto/members-short.dto";
 export class HelpingMapper {
 

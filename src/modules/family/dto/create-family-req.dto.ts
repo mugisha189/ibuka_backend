@@ -8,6 +8,11 @@ export class CreateFamilyRequestDto {
     @IsString()
     family_name: string;
 
+        @ApiProperty({ required: false })
+    @IsOptional()
+    @IsString()
+    former_province?: string;
+
     @ApiProperty({ required: false })
     @IsOptional()
     @IsString()

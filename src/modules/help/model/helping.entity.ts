@@ -1,9 +1,9 @@
 import { CommonEntity } from "src/common/entities";
 import { Column, Entity, ManyToOne, JoinColumn, ManyToMany } from 'typeorm';
 import { DonorEntity } from "./donor.entity";
-import { MembersEntity } from "src/modules/family/models/members.entity";
-import { FamilyEntity } from "src/modules/family/models/family.entity";
-@Entity({ name: "helping", schema: "helpings" })
+import { MembersEntity } from "../../member/models/members.entity";
+import { FamilyEntity } from "../../family/models/family.entity";
+@Entity({ name: "helping" })
 export class HelpingEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None"  })

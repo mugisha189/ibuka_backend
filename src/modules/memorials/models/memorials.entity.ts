@@ -1,11 +1,11 @@
 import { CommonEntity } from "src/common/entities";
 import { Entity, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { EMemorialType } from "../enum/memorial-type.enum";
-import { MembersEntity } from "src/modules/family/models/members.entity";
-import { FamilyEntity } from "src/modules/family/models/family.entity";
+import { MembersEntity } from "../../member/models/members.entity";
+import { FamilyEntity } from "../../family/models/family.entity";
 
 
-@Entity({ name: "memorial", schema: "memorials" })
+@Entity({ name: "memorial"})
 export class MemorialsEntity extends CommonEntity {
 
     @Column({ nullable: false, default: "None" })
@@ -34,7 +34,6 @@ export class MemorialsEntity extends CommonEntity {
 
     @ManyToMany(() => FamilyEntity, (family) => family.memorials, { eager: true, cascade: true })
     @JoinTable({
-        schema: "memorials",
         name: "memorials_family",
         joinColumn: {
             name: "memorialId",
