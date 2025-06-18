@@ -5,10 +5,11 @@ import { MemorialsController } from './memorials.controller';
 import { MemorialsRepository } from './models/memorials.repository';
 import { MemorialsEntity } from './models/memorials.entity';
 
+
 @Module({
-  imports: [TypeOrmModule.forFeature([MemorialsEntity, MemorialsRepository])],
+  imports: [TypeOrmModule.forFeature([MemorialsEntity])],
   controllers: [MemorialsController],
-  providers: [MemorialsService],
-  exports: [MemorialsService],
+  providers: [MemorialsService, MemorialsRepository],
+  exports: [MemorialsService, MemorialsRepository],
 })
 export class MemorialsModule {} 

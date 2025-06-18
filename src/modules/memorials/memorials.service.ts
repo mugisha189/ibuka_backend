@@ -23,6 +23,7 @@ export class MemorialsService {
         payload: null
       });
     } catch (error) {
+      console.log("the error stack is: " + error.stack);
       throw new CustomException(error);
     }
   }
@@ -37,6 +38,7 @@ export class MemorialsService {
         payload: memorialDtos
       });
     } catch (error) {
+      console.log("the error stack is: " + error.stack);
       throw new CustomException(error);
     }
   }
@@ -52,6 +54,7 @@ export class MemorialsService {
         payload: MemorialMapper.toMemorialDto(memorial)
       });
     } catch (error) {
+      console.log("the error stack is: " + error.stack);
       throw new CustomException(error);
     }
   }
@@ -81,6 +84,7 @@ export class MemorialsService {
         payload: paginatedResponse
       });
     } catch (error) {
+      console.log("the error stack is: " + error.stack);
       throw new CustomException(error);
     }
   }
