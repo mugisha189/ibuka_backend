@@ -23,7 +23,43 @@ export class MemberService {
 
     private readonly logger = new Logger(MemberService.name);
 
+    /**
+     * Helper method to resolve testimonial files from file IDs to URLs
+     * @param testimonials Array of testimonials with testimonial_files field
+     */
+    private async resolveTestimonialFiles(testimonials: any[]): Promise<void> {
+        if (!testimonials || testimonials.length === 0) return;
 
+        await Promise.all(
+            testimonials.map(async (testimonial) => {
+                if (testimonial.testimonial_files && testimonial.testimonial_files.length > 0) {
+                    try {
+                        // Resolve each file ID to URL
+                        const fileUrls = await Promise.all(
+                            testimonial.testimonial_files.map(async (fileId) => {
+                                try {
+                                    const fileRes = await this.filesService.getFileById(fileId, true) as any;
+                                    if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                        return fileRes.url;
+                                    }
+                                    return null;
+                                } catch (e) {
+                                    console.log(`Failed to resolve file ID ${fileId}: ${e.message}`);
+                                    return null;
+                                }
+                            })
+                        );
+                        
+                        // Filter out null values and update testimonial files
+                        testimonial.testimonial_files = fileUrls.filter(url => url !== null);
+                    } catch (e) {
+                        console.log(`Failed to resolve files for testimonial ${testimonial.id}: ${e.message}`);
+                        testimonial.testimonial_files = [];
+                    }
+                }
+            })
+        );
+    }
 
 async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit: number } }): Promise<ResponseDto<PaginationResponseDto<IbukaMemberDto>>> {
   try {
@@ -95,7 +131,7 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
 
     const allMembers = await query.getMany();
     
-    // Resolve profile pictures from file IDs to URLs for all members
+    // Resolve profile pictures and testimonial files from file IDs to URLs for all members
     if (allMembers && allMembers.length > 0) {
         await Promise.all(
             allMembers.map(async (member) => {
@@ -117,6 +153,11 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
                     
                     // Filter out null values and update member pictures
                     member.pictures = pictureUrls.filter(url => url !== null);
+                }
+
+                // Resolve testimonial files for this member
+                if (member.testimonials && member.testimonials.length > 0) {
+                    await this.resolveTestimonialFiles(member.testimonials);
                 }
             })
         );
@@ -207,6 +248,11 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
                 member.pictures = pictureUrls.filter(url => url !== null);
             }
 
+            // Resolve testimonial files from file IDs to URLs
+            if (member.testimonials && member.testimonials.length > 0) {
+                await this.resolveTestimonialFiles(member.testimonials);
+            }
+
             return this.responseService.makeResponse({
                 message: 'Successfully retrieved member',
                 payload: member,
@@ -253,7 +299,7 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
         try {
             const members = await this.membersRepository.find({ where: { familyId } });
             
-            // Resolve profile pictures from file IDs to URLs for all members
+            // Resolve profile pictures and testimonial files from file IDs to URLs for all members
             if (members && members.length > 0) {
                 await Promise.all(
                     members.map(async (member) => {
@@ -275,6 +321,11 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
                             
                             // Filter out null values and update member pictures
                             member.pictures = pictureUrls.filter(url => url !== null);
+                        }
+
+                        // Resolve testimonial files for this member
+                        if (member.testimonials && member.testimonials.length > 0) {
+                            await this.resolveTestimonialFiles(member.testimonials);
                         }
                     })
                 );

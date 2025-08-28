@@ -62,6 +62,7 @@ export class MemberMapper {
             survival_district: member.survival_district,
             survival_sector: member.survival_sector,
             survival_cell: member.survival_cell,
+            status: member.status,
             survival_village: member.survival_village,
             former_district: member?.family?.former_district,
             former_sector: member?.family?.former_sector,

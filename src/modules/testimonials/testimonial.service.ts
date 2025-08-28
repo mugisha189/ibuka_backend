@@ -7,15 +7,56 @@ import { ResponseService } from 'src/shared/response/response.service';
 import { TestimonialMapper } from './testimonial.mapper';
 import { Logger } from '@nestjs/common';
 import { TestimonialsDto } from './dto/testimonials.dto';
+import { FilesService } from '../files/files.service';
+
 @Injectable()
 export class TestimonialService {
 
     constructor(
         private readonly responseService: ResponseService,
         private readonly testimonialsRepository: TestimonialsRepository,
+        private readonly filesService: FilesService,
     ) { }
 
     private readonly logger = new Logger(TestimonialService.name);
+
+    /**
+     * Helper method to resolve testimonial files from file IDs to URLs
+     * @param testimonials Array of testimonials with testimonial_files field
+     */
+    private async resolveTestimonialFiles(testimonials: any[]): Promise<void> {
+        if (!testimonials || testimonials.length === 0) return;
+
+        await Promise.all(
+            testimonials.map(async (testimonial) => {
+                if (testimonial.testimonial_files && testimonial.testimonial_files.length > 0) {
+                    try {
+                        // Resolve each file ID to URL
+                        const fileUrls = await Promise.all(
+                            testimonial.testimonial_files.map(async (fileId) => {
+                                try {
+                                    const fileRes = await this.filesService.getFileById(fileId, true) as any;
+                                    if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                        return fileRes.url;
+                                    }
+                                    return null;
+                                } catch (e) {
+                                    this.logger.warn(`Failed to resolve file ID ${fileId}: ${e.message}`);
+                                    return null;
+                                }
+                            })
+                        );
+                        
+                        // Filter out null values and update testimonial files
+                        testimonial.testimonial_files = fileUrls.filter(url => url !== null);
+                    } catch (e) {
+                        this.logger.warn(`Failed to resolve files for testimonial ${testimonial.id}: ${e.message}`);
+                        testimonial.testimonial_files = [];
+                    }
+                }
+            })
+        );
+    }
 
     async createTestimonial(
         dto: CreateTestimonialsDto
@@ -46,6 +87,10 @@ export class TestimonialService {
                     payload: []
                 })
             }
+
+            // Resolve testimonial files from file IDs to URLs
+            await this.resolveTestimonialFiles(testimonials);
+
             const testimonialDtos = TestimonialMapper.toTestimonialsDtoList(testimonials);
             return this.responseService.makeResponse({
                 message: `Testimonials retrieved`,
@@ -69,6 +114,10 @@ export class TestimonialService {
                     payload: []
                 })
             }
+
+            // Resolve testimonial files from file IDs to URLs
+            await this.resolveTestimonialFiles(testimonials);
+
             const testimonialDtos = TestimonialMapper.toTestimonialsDtoList(testimonials);
             return this.responseService.makeResponse({
                 message: `Testimonials retrieved`,
@@ -98,6 +147,10 @@ export class TestimonialService {
             queryBuilder.orderBy('testimonial.createdAt', 'DESC');
             queryBuilder.skip((page - 1) * limit).take(limit);
             const [result, total] = await queryBuilder.getManyAndCount();
+            
+            // Resolve testimonial files from file IDs to URLs
+            await this.resolveTestimonialFiles(result);
+            
             const testimonialDtos = TestimonialMapper.toTestimonialsDtoList(result);
             return this.responseService.makeResponse({
                 message: 'Testimonials retrieved',
@@ -119,6 +172,10 @@ export class TestimonialService {
             if (!testimonial) {
                 throw new CustomException('Testimonial not found');
             }
+
+            // Resolve testimonial files from file IDs to URLs
+            await this.resolveTestimonialFiles([testimonial]);
+
             const testimonialDto = TestimonialMapper.toTestimonialsDto(testimonial);
             return this.responseService.makeResponse({
                 message: 'Testimonial retrieved',

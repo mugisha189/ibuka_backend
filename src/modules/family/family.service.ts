@@ -99,6 +99,44 @@ export class FamilyService {
         );
     }
 
+    /**
+     * Helper method to resolve testimonial files from file IDs to URLs
+     * @param testimonials Array of testimonials with testimonial_files field
+     */
+    private async resolveTestimonialFiles(testimonials: any[]): Promise<void> {
+        if (!testimonials || testimonials.length === 0) return;
+
+        await Promise.all(
+            testimonials.map(async (testimonial) => {
+                if (testimonial.testimonial_files && testimonial.testimonial_files.length > 0) {
+                    try {
+                        // Resolve each file ID to URL
+                        const fileUrls = await Promise.all(
+                            testimonial.testimonial_files.map(async (fileId) => {
+                                try {
+                                    const fileRes = await this.filesService.getFileById(fileId, true) as any;
+                                    if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                        return fileRes.url;
+                                    }
+                                    return null;
+                                } catch (e) {
+                                    this.logger.warn(`Failed to resolve file ID ${fileId}: ${e.message}`);
+                                    return null;
+                                }
+                            })
+                        );
+                        
+                        // Filter out null values and update testimonial files
+                        testimonial.testimonial_files = fileUrls.filter(url => url !== null);
+                    } catch (e) {
+                        this.logger.warn(`Failed to resolve files for testimonial ${testimonial.id}: ${e.message}`);
+                        testimonial.testimonial_files = [];
+                    }
+                }
+            })
+        );
+    }
+
 
 
 
@@ -186,11 +224,14 @@ export class FamilyService {
             // Execute query
             const families = await queryBuilder.getMany();
             
-            // Resolve profile pictures for all families (optional, can be controlled by a parameter)
+            // Resolve profile pictures and testimonial files for all families
             // Note: This might impact performance for large lists, consider adding a parameter to control this
             for (const family of families) {
                 if (family.members && family.members.length > 0) {
                     await this.resolveProfilePictures(family.members);
+                }
+                if (family.testimonials && family.testimonials.length > 0) {
+                    await this.resolveTestimonialFiles(family.testimonials);
                 }
             }
             
@@ -209,13 +250,18 @@ export class FamilyService {
         familyId: string
     ): Promise<ResponseDto<FamilyProp>> {
         try {
-            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members'] });
+            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members', 'testimonials'] });
             if (!family) {
                 throw new NotFoundCustomException(`Family ${familyId} not found`);
             }
 
             // Resolve profile pictures from file IDs to URLs for all members
             await this.resolveProfilePictures(family.members);
+            
+            // Resolve testimonial files from file IDs to URLs
+            if (family.testimonials && family.testimonials.length > 0) {
+                await this.resolveTestimonialFiles(family.testimonials);
+            }
 
             const familyProp = FamilyMapper.toFamilyDtoPropertie(family);
             return this.responseService.makeResponse({
@@ -354,13 +400,18 @@ export class FamilyService {
         familyId: string
     ): Promise<ResponseDto<FamilyStructureDto>> {
         try {
-            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members'] });
+            const family = await this.familyRepository.findOne({ where: { id: familyId }, relations: ['members', 'testimonials'] });
             if (!family) {
                 throw new NotFoundCustomException(`Family ${familyId} not found`);
             }
 
             // Resolve profile pictures from file IDs to URLs for all members
             await this.resolveProfilePictures(family.members);
+            
+            // Resolve testimonial files from file IDs to URLs
+            if (family.testimonials && family.testimonials.length > 0) {
+                await this.resolveTestimonialFiles(family.testimonials);
+            }
 
             const familyStructureDto = await FamilyMapper.toDtoFamilyStructure(family);
             return this.responseService.makeResponse({
