@@ -94,6 +94,34 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
     }
 
     const allMembers = await query.getMany();
+    
+    // Resolve profile pictures from file IDs to URLs for all members
+    if (allMembers && allMembers.length > 0) {
+        await Promise.all(
+            allMembers.map(async (member) => {
+                if (member.pictures && member.pictures.length > 0) {
+                    const pictureUrls = await Promise.all(
+                        member.pictures.map(async (pictureId) => {
+                            try {
+                                const fileRes = await this.filesService.getFileById(pictureId, true) as any;
+                                if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                    return fileRes.url;
+                                }
+                                return null;
+                            } catch (e) {
+                                console.log(`Failed to resolve picture ID ${pictureId}: ${e.message}`);
+                                return null;
+                            }
+                        })
+                    );
+                    
+                    // Filter out null values and update member pictures
+                    member.pictures = pictureUrls.filter(url => url !== null);
+                }
+            })
+        );
+    }
+    
     const memberDtos = MemberMapper.toIbukaMembersDtoList(allMembers);
 
     const itemCount = memberDtos.length;
@@ -157,6 +185,28 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
             if (!member) {
                 throw new NotFoundCustomException('Member not found');
             }
+
+            // Resolve profile pictures from file IDs to URLs
+            if (member.pictures && member.pictures.length > 0) {
+                const pictureUrls = await Promise.all(
+                    member.pictures.map(async (pictureId) => {
+                        try {
+                            const fileRes = await this.filesService.getFileById(pictureId, true) as any;
+                            if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                return fileRes.url;
+                            }
+                            return null;
+                        } catch (e) {
+                            console.log(`Failed to resolve picture ID ${pictureId}: ${e.message}`);
+                            return null;
+                        }
+                    })
+                );
+                
+                // Filter out null values and update member pictures
+                member.pictures = pictureUrls.filter(url => url !== null);
+            }
+
             return this.responseService.makeResponse({
                 message: 'Successfully retrieved member',
                 payload: member,
@@ -202,6 +252,34 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
     async getMembersByFamily(familyId: string): Promise<ResponseDto<MembersEntity[]>> {
         try {
             const members = await this.membersRepository.find({ where: { familyId } });
+            
+            // Resolve profile pictures from file IDs to URLs for all members
+            if (members && members.length > 0) {
+                await Promise.all(
+                    members.map(async (member) => {
+                        if (member.pictures && member.pictures.length > 0) {
+                            const pictureUrls = await Promise.all(
+                                member.pictures.map(async (pictureId) => {
+                                    try {
+                                        const fileRes = await this.filesService.getFileById(pictureId, true) as any;
+                                        if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                            return fileRes.url;
+                                        }
+                                        return null;
+                                    } catch (e) {
+                                        console.log(`Failed to resolve picture ID ${pictureId}: ${e.message}`);
+                                        return null;
+                                    }
+                                })
+                            );
+                            
+                            // Filter out null values and update member pictures
+                            member.pictures = pictureUrls.filter(url => url !== null);
+                        }
+                    })
+                );
+            }
+
             return this.responseService.makeResponse({
                 message: 'Members retrieved successfully',
                 payload: members,

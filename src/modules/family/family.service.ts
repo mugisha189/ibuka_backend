@@ -61,6 +61,44 @@ export class FamilyService {
         }
     }
 
+    /**
+     * Helper method to resolve profile pictures from file IDs to URLs
+     * @param members Array of members with pictures field
+     */
+    private async resolveProfilePictures(members: any[]): Promise<void> {
+        if (!members || members.length === 0) return;
+
+        await Promise.all(
+            members.map(async (member) => {
+                if (member.pictures && member.pictures.length > 0) {
+                    try {
+                        // Resolve each picture ID to URL
+                        const pictureUrls = await Promise.all(
+                            member.pictures.map(async (pictureId) => {
+                                try {
+                                    const fileRes = await this.filesService.getFileById(pictureId, true) as any;
+                                    if (fileRes && typeof fileRes === 'object' && 'url' in fileRes) {
+                                        return fileRes.url;
+                                    }
+                                    return null;
+                                } catch (e) {
+                                    this.logger.warn(`Failed to resolve picture ID ${pictureId}: ${e.message}`);
+                                    return null;
+                                }
+                            })
+                        );
+                        
+                        // Filter out null values and update member pictures
+                        member.pictures = pictureUrls.filter(url => url !== null);
+                    } catch (e) {
+                        this.logger.warn(`Failed to resolve pictures for member ${member.id}: ${e.message}`);
+                        member.pictures = [];
+                    }
+                }
+            })
+        );
+    }
+
 
 
 
@@ -79,7 +117,6 @@ export class FamilyService {
                 testimonials = pagination.params?.testimonials !== undefined ? Number(pagination.params.testimonials) : undefined,
             } = pagination.params || {};
 
-            console.log(search, deceased_families, survived_families, testimonial_families, sector, survivors, testimonials);
             
             // Build database query with all filters
             const queryBuilder = this.familyRepository
@@ -149,6 +186,14 @@ export class FamilyService {
             // Execute query
             const families = await queryBuilder.getMany();
             
+            // Resolve profile pictures for all families (optional, can be controlled by a parameter)
+            // Note: This might impact performance for large lists, consider adding a parameter to control this
+            for (const family of families) {
+                if (family.members && family.members.length > 0) {
+                    await this.resolveProfilePictures(family.members);
+                }
+            }
+            
             const familyDtos = FamilyMapper.toFamilyDtoList(families);
             const paginatedResponse = this.getPaginatedResponseFamilies(familyDtos, pagination);
             return this.responseService.makeResponse({
@@ -168,6 +213,10 @@ export class FamilyService {
             if (!family) {
                 throw new NotFoundCustomException(`Family ${familyId} not found`);
             }
+
+            // Resolve profile pictures from file IDs to URLs for all members
+            await this.resolveProfilePictures(family.members);
+
             const familyProp = FamilyMapper.toFamilyDtoPropertie(family);
             return this.responseService.makeResponse({
                 message: `Family retrieved successfully`,
@@ -309,6 +358,10 @@ export class FamilyService {
             if (!family) {
                 throw new NotFoundCustomException(`Family ${familyId} not found`);
             }
+
+            // Resolve profile pictures from file IDs to URLs for all members
+            await this.resolveProfilePictures(family.members);
+
             const familyStructureDto = await FamilyMapper.toDtoFamilyStructure(family);
             return this.responseService.makeResponse({
                 message: `Family Structure retrieved`,
