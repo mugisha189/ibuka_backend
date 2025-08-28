@@ -1,5 +1,5 @@
 export enum EMemberStatus {
     SURVIVED='SURVIVED',
-    DISSEIZED='DISSEIZED',
+    DECEASED='DECEASED',
     NONE='NONE'
 }

@@ -37,7 +37,7 @@ export class FamilyMapper {
             ...Object.assign(new FamilyDto(), entity),
             members: entity.members ? entity.members.length : 0,
             testimonials: entity.testimonials ? entity.testimonials.length : 0,
-            deceased: entity.members ? entity.members.map(member => member.status === EMemberStatus.DISSEIZED).length : 0,
+            deceased: entity.members ? entity.members.map(member => member.status === EMemberStatus.DECEASED).length : 0,
             survived: entity.members ? entity.members.map(member => member.status === EMemberStatus.SURVIVED).length : 0
         };
     }
@@ -62,7 +62,7 @@ export class FamilyMapper {
         const members = family.members || [];
         const parents = members.filter(m => m.role === EMemberRole.FATHER || m.role === EMemberRole.MOTHER);
         const children = members.filter(m => m.role === EMemberRole.CHILD);
-        const deceased = members.filter(m => m.status === EMemberStatus.DISSEIZED);
+        const deceased = members.filter(m => m.status === EMemberStatus.DECEASED);
         const survived = members.filter(m => m.status === EMemberStatus.SURVIVED);
         const father = members.find(m => m.role === EMemberRole.FATHER);
         const mother = members.find(m => m.role === EMemberRole.MOTHER);

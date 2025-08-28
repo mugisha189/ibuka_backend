@@ -17,6 +17,7 @@ import { FamilyEntity } from './models/family.entity';
 import { FamilyStructureDto } from './dto/family-structure.dto';
 import { UpdateFamilyDto } from './dto/update-family.dto';
 import { FilesService } from '../files/files.service';
+import { DataSource } from 'typeorm';
 @Injectable()
 export class FamilyService {
 
@@ -25,6 +26,7 @@ export class FamilyService {
         private readonly membersRepository: MembersRepository,
         private readonly responseService: ResponseService,
         private readonly filesService: FilesService,
+        private readonly dataSource: DataSource,
     ) { }
 
     private readonly logger = new Logger(FamilyService.name);
@@ -59,114 +61,95 @@ export class FamilyService {
         }
     }
 
-    private isMatch(fieldName: string, filterValue: string): boolean {
-        return fieldName === filterValue;
-    }
 
-    private isAlmostMatch(fieldName: string, filterValue: string): boolean {
-        const similarityThreshold = 0.88;
-        const str1 = fieldName.toLowerCase();
-        const str2 = filterValue.toLowerCase();
 
-        const calculateLevenshteinDistance = (a: string, b: string): number => {
-            const matrix = Array.from({ length: a.length + 1 }, (_, i) =>
-                Array.from({ length: b.length + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
-            );
-            for (let i = 1; i <= a.length; i++) {
-                for (let j = 1; j <= b.length; j++) {
-                    const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-                    matrix[i][j] = Math.min(
-                        matrix[i - 1][j] + 1,
-                        matrix[i][j - 1] + 1,
-                        matrix[i - 1][j - 1] + cost
-                    );
-                }
-            }
-            return matrix[a.length][b.length];
-        };
-        const levenshteinDistance = calculateLevenshteinDistance(str1, str2);
-        const maxLength = Math.max(str1.length, str2.length);
-        const similarity = 1 - levenshteinDistance / maxLength;
-        return similarity >= similarityThreshold;
-    }
 
-private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
-  const {
-    search,
-    deceased_families,
-    survived_families,
-    testimonial_families,
-    sector,
-    survivors,
-    testimonials,
-  } = filters;
-
-  const isAnyActive = !search &&
-    !deceased_families && !survived_families &&
-    !testimonial_families && !sector && survivors === undefined && testimonials === undefined;
-
-  if (isAnyActive) {
-    return families;
-  }
-
-  return families.filter(family => {
-    const matchesSearch = search && search !== '' &&
-      [family.former_district, family.former_sector, family.former_cell, family.former_village]
-        .some(field => this.isMatch(field, search) || this.isAlmostMatch(field, search));
-
-    const matchesDeceased = deceased_families && deceased_families !== '' && this.isMatch(family.status, deceased_families);
-    const matchesSurvived = survived_families && survived_families !== '' && this.isMatch(family.status, survived_families);
-    const hasTestimonials = testimonial_families && testimonial_families !== '' && family.testimonials?.length > 0;
-
-    const matchesSector = sector && sector !== '' &&
-      family.members.some(member => member.current_sector === sector);
-
-    const matchesSurvivorsCount = typeof survivors === 'number' &&
-      family.members.filter(member => member.status === 'SURVIVED').length === survivors;
-
-    const matchesTestimonialsCount = typeof testimonials === 'number' &&
-      (family.testimonials?.length ?? 0) === testimonials;
-
-    return (
-      matchesSearch ||
-      matchesDeceased ||
-      matchesSurvived ||
-      hasTestimonials ||
-      matchesSector ||
-      matchesSurvivorsCount ||
-      matchesTestimonialsCount
-    );
-  });
-}
 
     async getFamilies(
         pagination: PaginationRequest
     ): Promise<ResponseDto<PaginationResponseDto<FamilyResponseDto>>> {
         try {
-    const {
-      search = pagination.params?.search ?? '',
-      deceased_families = (pagination.params?.deceased_families && this.validateEnumType(pagination.params.deceased_families, EFamilyStatus, 'deceased families', this.logger)) ?? '',
-      survived_families = (pagination.params?.survived_families && this.validateEnumType(pagination.params.survived_families, EFamilyStatus, 'survived families', this.logger)) ?? '',
-      testimonial_families = pagination.params?.testimonial_families ?? '',
-      sector = pagination.params?.sector ?? '',
-      survivors = pagination.params?.survivors !== undefined ? Number(pagination.params.survivors) : undefined,
-      testimonials = pagination.params?.testimonials !== undefined ? Number(pagination.params.testimonials) : undefined,
-    } = pagination.params || {};
+            const {
+                search = pagination.params?.search ?? '',
+                deceased_families = (pagination.params?.deceased_families && this.validateEnumType(pagination.params.deceased_families, EFamilyStatus, 'deceased families', this.logger)) ?? '',
+                survived_families = (pagination.params?.survived_families && this.validateEnumType(pagination.params.survived_families, EFamilyStatus, 'survived families', this.logger)) ?? '',
+                testimonial_families = pagination.params?.testimonial_families ?? '',
+                sector = pagination.params?.sector ?? '',
+                survivors = pagination.params?.survivors !== undefined ? Number(pagination.params.survivors) : undefined,
+                testimonials = pagination.params?.testimonials !== undefined ? Number(pagination.params.testimonials) : undefined,
+            } = pagination.params || {};
 
-    const families = await this.familyRepository.find({
-      relations: ['members', 'testimonials']
-    });
+            console.log(search, deceased_families, survived_families, testimonial_families, sector, survivors, testimonials);
+            
+            // Build database query with all filters
+            const queryBuilder = this.familyRepository
+                .createQueryBuilder('family')
+                .leftJoinAndSelect('family.members', 'members')
+                .leftJoinAndSelect('family.testimonials', 'testimonials');
 
-    const filteredFamilies = this.filterFamilies(families, {
-      search,
-      deceased_families,
-      survived_families,
-      testimonial_families,
-      sector,
-      survivors,
-      testimonials,
-    });
-            const familyDtos = FamilyMapper.toFamilyDtoList(filteredFamilies);
+            // Apply search filter
+            if (search && search.trim() !== '') {
+                queryBuilder.where(
+                    'family.family_name ILIKE :search OR ' +
+                    'family.former_province ILIKE :search OR ' +
+                    'family.former_district ILIKE :search OR ' +
+                    'family.former_sector ILIKE :search OR ' +
+                    'family.former_cell ILIKE :search OR ' +
+                    'family.former_village ILIKE :search OR ' +
+                    'members.current_district ILIKE :search OR ' +
+                    'members.current_sector ILIKE :search OR ' +
+                    'members.current_cell ILIKE :search OR ' +
+                    'members.current_village ILIKE :search OR ' +
+                    'members.survival_district ILIKE :search OR ' +
+                    'members.survival_sector ILIKE :search OR ' +
+                    'members.survival_cell ILIKE :search OR ' +
+                    'members.survival_village ILIKE :search',
+                    { search: `%${search}%` }
+                );
+            }
+
+            // Apply status filters
+            if (deceased_families && deceased_families !== '') {
+                queryBuilder.andWhere('family.status = :deceasedStatus', { deceasedStatus: deceased_families });
+            }
+
+            if (survived_families && survived_families !== '') {
+                queryBuilder.andWhere('family.status = :survivedStatus', { survivedStatus: survived_families });
+            }
+
+            // Apply testimonial filter
+            if (testimonial_families && testimonial_families !== '') {
+                queryBuilder.andWhere('testimonials.id IS NOT NULL');
+            }
+
+            // Apply sector filter
+            if (sector && sector !== '') {
+                queryBuilder.andWhere(
+                    'members.current_sector ILIKE :sector OR members.survival_sector ILIKE :sector',
+                    { sector: `%${sector}%` }
+                );
+            }
+
+            // Apply survivors count filter
+            if (typeof survivors === 'number') {
+                queryBuilder.andWhere(
+                    '(SELECT COUNT(*) FROM members m WHERE m.familyId = family.id AND m.status = :survivedStatus) = :survivorsCount',
+                    { survivedStatus: 'SURVIVED', survivorsCount: survivors }
+                );
+            }
+
+            // Apply testimonials count filter
+            if (typeof testimonials === 'number') {
+                queryBuilder.andWhere(
+                    '(SELECT COUNT(*) FROM testimonials t WHERE t.familyId = family.id) = :testimonialsCount',
+                    { testimonialsCount: testimonials }
+                );
+            }
+
+            // Execute query
+            const families = await queryBuilder.getMany();
+            
+            const familyDtos = FamilyMapper.toFamilyDtoList(families);
             const paginatedResponse = this.getPaginatedResponseFamilies(familyDtos, pagination);
             return this.responseService.makeResponse({
                 message: `Families retrieved`,
@@ -200,10 +183,18 @@ private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
     async createFamily(
         dto: CreateFamilyDto
     ): Promise<ResponseDto<string>> {
+        // Start database transaction
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
         try {
             const familyEntity = FamilyMapper.toCreateEntity(dto);
-            console.log(familyEntity)
-            const savedFamily = await this.familyRepository.save(familyEntity);
+            console.log(familyEntity);
+            
+            // Save family within transaction
+            const savedFamily = await queryRunner.manager.save(FamilyEntity, familyEntity);
+            
             // Map members and resolve profile_picture from file ID to file URL
             const members = await Promise.all(
                 dto.members.map(async (member) => {
@@ -221,54 +212,92 @@ private filterFamilies(families: FamilyEntity[], filters: any): FamilyEntity[] {
                     return { ...member, familyId: savedFamily.id, profile_picture };
                 })
             );
-            await Promise.all([
-                this.membersRepository.save(members)
-            ])
+
+            // Save members within transaction
+            await queryRunner.manager.save('MembersEntity', members);
+
+            // If everything succeeds, commit the transaction
+            await queryRunner.commitTransaction();
+
             return this.responseService.makeResponse({
                 message: `Successfully created the family`,
                 payload: null
-            })
+            });
         } catch (error) {
+            // If any error occurs, rollback the transaction
+            await queryRunner.rollbackTransaction();
             console.log("the error stack is: " + error.stack);
             throw new CustomException(error);
+        } finally {
+            // Release the query runner
+            await queryRunner.release();
         }
     }
 
 
     async updateFamily(familyId: string, dto: UpdateFamilyDto): Promise<ResponseDto<string>> {
+        // Start database transaction for update operations
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
         try {
-            const existingFamily = await this.familyRepository.findOne({ where: { id: familyId } });
+            const existingFamily = await queryRunner.manager.findOne(FamilyEntity, { where: { id: familyId } });
             if (!existingFamily) {
                 throw new NotFoundCustomException('Family not found');
             }
 
-            const updatedFamily = this.familyRepository.merge(existingFamily, dto);
-            await this.familyRepository.save(updatedFamily);
+            const updatedFamily = queryRunner.manager.merge(FamilyEntity, existingFamily, dto);
+            await queryRunner.manager.save(FamilyEntity, updatedFamily);
+
+            // If everything succeeds, commit the transaction
+            await queryRunner.commitTransaction();
 
             return this.responseService.makeResponse({
                 message: 'Successfully updated family',
                 payload: null,
             });
         } catch (error) {
+            // If any error occurs, rollback the transaction
+            await queryRunner.rollbackTransaction();
             console.log('the error stack is: ' + error.stack);
             throw new CustomException(error);
+        } finally {
+            // Release the query runner
+            await queryRunner.release();
         }
     }
 
     async deleteFamily(familyId: string): Promise<ResponseDto<string>> {
+        // Start database transaction for delete operations
+        const queryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+        await queryRunner.startTransaction();
+
         try {
-            const existingFamily = await this.familyRepository.findOne({ where: { id: familyId } });
+            const existingFamily = await queryRunner.manager.findOne(FamilyEntity, { where: { id: familyId } });
             if (!existingFamily) {
                 throw new NotFoundCustomException('Family not found');
             }
-            await this.familyRepository.delete({ id: familyId });
+            
+            // Delete family (cascade will handle related members and testimonials)
+            await queryRunner.manager.delete(FamilyEntity, { id: familyId });
+
+            // If everything succeeds, commit the transaction
+            await queryRunner.commitTransaction();
+
             return this.responseService.makeResponse({
                 message: 'Successfully deleted family',
                 payload: null,
             });
         } catch (error) {
+            // If any error occurs, rollback the transaction
+            await queryRunner.rollbackTransaction();
             console.log('the error stack is: ' + error.stack);
             throw new CustomException(error);
+        } finally {
+            // Release the query runner
+            await queryRunner.release();
         }
     }
 

@@ -37,7 +37,8 @@ async getIbukaMembers(filter: { params?: any; pagination: { page: number; limit:
       testimonials,
     } = filter.params || {};
 
-    const { page, limit } = filter.pagination;
+    // Set default values for pagination
+    const { page = 1, limit = 10 } = filter.pagination;
 
     const query = this.membersRepository.createQueryBuilder('member')
       .leftJoinAndSelect('member.family', 'family')

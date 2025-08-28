@@ -142,12 +142,16 @@ public getIbukaMembers(
   @Query('search') search?: string,
   @Query('sector') sector?: string,
   @Query('testimonials') testimonials?: boolean,
-  @Query('page', ParseIntPipe) page: number = 1,
-  @Query('limit', ParseIntPipe) limit: number = 10,
+  @Query('page', new ParseIntPipe({ optional: true })) page?: number,
+  @Query('limit', new ParseIntPipe({ optional: true })) limit?: number,
 ): Promise<ResponseDto<PaginationResponseDto<IbukaMemberDto>>> {
+  // Set default values if not provided
+  const pageNumber = page || 1;
+  const limitNumber = limit || 10;
+  
   return this.memberService.getIbukaMembers({
     params: { orphans, widows, widowers, solitary, search, sector, testimonials },
-    pagination: { page, limit },
+    pagination: { page: pageNumber, limit: limitNumber },
   } as any);
 }
 
