@@ -1,6 +1,6 @@
 import { CommonEntity } from "src/common/entities";
 import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
-import { FamilyEntity } from "./family.entity";
+import { FamilyEntity } from "../../family/models/family.entity";
 import { MembersEntity } from "../../member/models/members.entity";
 @Entity({ name: "testimonials" })
 export class TestimonialsEntity extends CommonEntity {

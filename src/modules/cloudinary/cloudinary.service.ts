@@ -31,12 +31,14 @@ export class CloudinaryService {
    */
   async uploadFileToCloudinary(file: Express.Multer.File, folder: string): Promise<CloudinaryResponse> {
     return new Promise<CloudinaryResponse>((resolve, reject) => {
+      // Determine resource type based on file MIME type
+      const resourceType = this.getResourceType(file.mimetype);
+      
+      // Get upload options based on file type
+      const uploadOptions = this.getUploadOptions(file.mimetype, folder);
+
       const uploadStream = cloudinary.uploader.upload_stream(
-        { 
-          folder,
-          resource_type: 'image',
-          format: 'jpg'
-         }, // Specify the folder in upload options
+        uploadOptions,
         (error: any, result: UploadApiResponse) => {
           if (error) {
             reject(error);
@@ -48,6 +50,65 @@ export class CloudinaryService {
 
       streamifier.createReadStream(file.buffer).pipe(uploadStream);
     });
+  }
+
+  /**
+   * Determine Cloudinary resource type based on MIME type
+   * @param mimetype File MIME type
+   * @returns Cloudinary resource type
+   */
+  private getResourceType(mimetype: string): string {
+    if (mimetype.startsWith('video/')) {
+      return 'video';
+    } else if (mimetype.startsWith('audio/')) {
+      return 'video'; // Cloudinary uses 'video' for audio files
+    } else if (mimetype.startsWith('image/')) {
+      return 'image';
+    } else {
+      return 'raw'; // For other file types
+    }
+  }
+
+  /**
+   * Get upload options based on file type
+   * @param mimetype File MIME type
+   * @param folder Cloudinary folder
+   * @returns Upload options object
+   */
+  private getUploadOptions(mimetype: string, folder: string): any {
+    const baseOptions = { folder };
+
+    if (mimetype.startsWith('video/')) {
+      return {
+        ...baseOptions,
+        resource_type: 'video',
+        chunk_size: 6000000, // 6MB chunks for video uploads
+        eager: [
+          { width: 300, height: 300, crop: 'pad', audio_codec: 'none' },
+          { width: 160, height: 100, crop: 'crop', gravity: 'south', audio_codec: 'none' }
+        ],
+        eager_async: true
+      };
+    } else if (mimetype.startsWith('audio/')) {
+      return {
+        ...baseOptions,
+        resource_type: 'video', // Cloudinary uses 'video' for audio
+        audio_codec: 'aac',
+        audio_frequency: 44100
+      };
+    } else if (mimetype.startsWith('image/')) {
+      return {
+        ...baseOptions,
+        resource_type: 'image',
+        format: 'auto', // Let Cloudinary determine the best format
+        quality: 'auto'
+      };
+    } else {
+      return {
+        ...baseOptions,
+        resource_type: 'raw'
+      };
+    }
   }
 
   async deleteFile(publicId: string): Promise<any> {

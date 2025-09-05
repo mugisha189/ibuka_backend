@@ -19,6 +19,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse, ApiConsumes, ApiBo
 import { ResponseDto } from 'src/common/dtos/response.dto';
 import { TOKEN_NAME } from 'src/constants';
 import { CustomException } from 'src/common/http/exceptions/custom.exception';
+import { FileEntity } from './model/file.entity';
 
 @ApiTags('Files')
 @Controller({
@@ -30,7 +31,10 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Post('upload')
-  @ApiOperation({ summary: 'Upload one or more files', description: 'Upload one or more files. Returns an array of file IDs.' })
+  @ApiOperation({ 
+    summary: 'Upload one or more files', 
+    description: 'Upload one or more files (images, videos, audio). Supports: images (jpg, png, gif, webp), videos (mp4, mov, avi, webm), audio (mp3, wav, aac, ogg). Returns an array of file IDs.' 
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -39,6 +43,7 @@ export class FilesController {
         files: {
           type: 'array',
           items: { type: 'string', format: 'binary' },
+          description: 'Files to upload. Supported formats: images (jpg, png, gif, webp), videos (mp4, mov, avi, webm), audio (mp3, wav, aac, ogg)'
         },
       },
     },
@@ -46,6 +51,18 @@ export class FilesController {
   @ApiOkResponse({ description: 'Array of uploaded file IDs', type: ResponseDto })
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFiles(@UploadedFiles() files: Express.Multer.File[]) {
+    // Validate file types using service method
+    const invalidFiles = files.filter(file => !this.filesService.isFileTypeSupported(file.mimetype));
+    if (invalidFiles.length > 0) {
+      const invalidTypes = invalidFiles.map(f => f.mimetype).join(', ');
+      const supportedTypes = [
+        'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        'video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime',
+        'audio/mp3', 'audio/wav', 'audio/aac', 'audio/ogg', 'audio/mpeg', 'audio/mp4'
+      ];
+      throw new CustomException(`Invalid file types: ${invalidTypes}. Supported types: ${supportedTypes.join(', ')}`);
+    }
+
     const ids = await this.filesService.uploadFiles(files);
     return {
       success: true,

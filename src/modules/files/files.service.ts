@@ -35,6 +35,40 @@ export class FilesService {
     return ids;
   }
 
+  /**
+   * Get file type category based on MIME type
+   * @param mimetype File MIME type
+   * @returns File type category
+   */
+  getFileType(mimetype: string): 'image' | 'video' | 'audio' | 'document' {
+    if (mimetype.startsWith('image/')) {
+      return 'image';
+    } else if (mimetype.startsWith('video/')) {
+      return 'video';
+    } else if (mimetype.startsWith('audio/')) {
+      return 'audio';
+    } else {
+      return 'document';
+    }
+  }
+
+  /**
+   * Check if file type is supported
+   * @param mimetype File MIME type
+   * @returns True if supported
+   */
+  isFileTypeSupported(mimetype: string): boolean {
+    const supportedTypes = [
+      // Images
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+      // Videos
+      'video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime',
+      // Audio
+      'audio/mp3', 'audio/wav', 'audio/aac', 'audio/ogg', 'audio/mpeg', 'audio/mp4'
+    ];
+    return supportedTypes.includes(mimetype);
+  }
+
   async getFileById(id: string, raw = false) {
     try {
       const file = await this.fileRepository.findOne({ where: { id } });
